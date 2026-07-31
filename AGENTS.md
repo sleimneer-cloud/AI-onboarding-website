@@ -1,0 +1,59 @@
+# IX Value Loop repository guidance
+
+## Read before implementation
+
+Before changing application code, read the contract documents in this order:
+
+1. `docs/DECISIONS.md`
+2. `docs/DATA_MODEL.md`
+3. `docs/STATE_TRANSITIONS.md`
+4. `docs/LLM_CONTRACT.md`
+5. `docs/API_CONTRACT.md`
+6. `docs/PRODUCT_SPEC.md`
+7. `docs/DEVELOPMENT_PLAN.md`
+8. `docs/DEMO_SCENARIO.md`
+
+The data, state, LLM, and API contracts are the implementation source of truth.
+If a product or development plan conflicts with a contract, do not silently choose
+one. Update `docs/DECISIONS.md` and the affected contract first.
+
+## Non-negotiable product rules
+
+- The MVP implements one complete weekly loop.
+- One onboarding week has at most one primary assignment in the MVP.
+- One assignment has at most one Evidence, one Evidence Card, and one final manager feedback.
+- AI structures user-provided evidence; it does not evaluate employees or culture fit.
+- Never infer facts, achievements, scores, or causal impact absent from the evidence.
+- External link contents are never fetched. Only user-entered link titles and descriptions may be sent to the LLM.
+- Store the initial generated Card separately from the employee-edited final Card.
+- Employees cannot edit a Card after confirmation.
+- Managers cannot edit Card content. Submitting feedback means approval and report inclusion.
+- Only `manager_reviewed` Cards appear as completed report records.
+- Groq failure must fall back to a clearly labeled deterministic Mock within the total AI time budget.
+- Use fictional demo data only.
+
+## Engineering rules
+
+- Enforce role and ownership checks on the server for every protected resource.
+- Treat another user's resource as not found.
+- Keep state transitions in the service layer, not in route handlers or UI components.
+- Use DB uniqueness and transactions to protect one-to-one MVP relationships.
+- Do not keep a DB transaction open during a Groq network request.
+- State-changing requests must verify Origin and CSRF.
+- Do not log evidence text, Card text, link URLs, credentials, tokens, API keys, or upstream response bodies.
+- Reject unknown fields in API and LLM Pydantic models.
+- Never render user or AI text as raw HTML.
+- Do not add file upload, external URL crawling, HR write management, manager rejection, or Card revision UI to the MVP.
+
+## Verification
+
+For every implementation task:
+
+1. Add or update focused tests.
+2. Run the smallest relevant tests.
+3. Run type checking and the production frontend build when frontend contracts change.
+4. Review the diff against the contract documents.
+5. Report commands, results, and any remaining contract gap.
+
+When project commands are created, add their exact Windows/local and Replit/Linux forms
+to this file and `README.md`.

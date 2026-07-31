@@ -1,0 +1,254 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ix-value-loop.local/schemas/evidence-card-generation-input-v1.json",
+  "title": "EvidenceCardGenerationInputV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "request_id",
+    "language",
+    "core_value",
+    "onboarding",
+    "assignment",
+    "actions",
+    "evidence"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "request_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "language": {
+      "const": "ko-KR"
+    },
+    "core_value": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "name",
+        "definition"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "definition": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      }
+    },
+    "onboarding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "week_number",
+        "stage"
+      ],
+      "properties": {
+        "week_number": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "stage": {
+          "type": "string",
+          "enum": [
+            "guided",
+            "assisted",
+            "autonomous"
+          ]
+        }
+      }
+    },
+    "assignment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "description",
+        "work_type",
+        "description_source_ref"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "work_type": {
+          "type": "string",
+          "enum": [
+            "user_interview",
+            "process_analysis",
+            "problem_definition",
+            "data_analysis",
+            "service_planning",
+            "prototype_build",
+            "user_validation",
+            "collaboration",
+            "result_improvement"
+          ]
+        },
+        "description_source_ref": {
+          "const": "assignment.description"
+        }
+      }
+    },
+    "actions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "text",
+          "completion_criteria",
+          "source_ref"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "completion_criteria": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "source_ref": {
+            "type": "string",
+            "pattern": "^action:[0-9a-fA-F-]{36}$"
+          }
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "performed_action",
+        "discovery",
+        "changed_judgment",
+        "work_impact",
+        "next_action",
+        "links"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "performed_action": {
+          "$ref": "#/$defs/evidenceField"
+        },
+        "discovery": {
+          "$ref": "#/$defs/evidenceField"
+        },
+        "changed_judgment": {
+          "$ref": "#/$defs/evidenceField"
+        },
+        "work_impact": {
+          "$ref": "#/$defs/evidenceField"
+        },
+        "next_action": {
+          "$ref": "#/$defs/nextActionField"
+        },
+        "links": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "title",
+              "description",
+              "source_ref"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "title": {
+                "type": "string",
+                "maxLength": 200
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 1000
+              },
+              "source_ref": {
+                "type": "string",
+                "pattern": "^link:[0-9a-fA-F-]{36}$"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "evidenceField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text",
+        "source_ref"
+      ],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 2000
+        },
+        "source_ref": {
+          "type": "string"
+        }
+      }
+    },
+    "nextActionField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text",
+        "source_ref"
+      ],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 1000
+        },
+        "source_ref": {
+          "const": "evidence.next_action"
+        }
+      }
+    }
+  }
+}
