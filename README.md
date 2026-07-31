@@ -7,6 +7,9 @@
 구현 전에는 `AGENTS.md`에 정의된 순서대로 `docs/` 계약 문서를 읽어야 합니다. 데이터,
 상태, LLM, API 계약이 제품 및 개발계획보다 우선합니다.
 
+현재 단계별 구현 상태, 다음 작업과 완료 기준은
+[`docs/IMPLEMENTATION_ROADMAP.md`](docs/IMPLEMENTATION_ROADMAP.md)에서 확인합니다.
+
 ## 현재 범위
 
 - FastAPI 애플리케이션과 `/health`, `/ready`

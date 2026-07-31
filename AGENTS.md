@@ -13,6 +13,10 @@ Before changing application code, read the contract documents in this order:
 7. `docs/DEVELOPMENT_PLAN.md`
 8. `docs/DEMO_SCENARIO.md`
 
+After the contract documents, read `docs/IMPLEMENTATION_ROADMAP.md` to understand
+the current implementation status, dependencies, and verification history. The
+roadmap tracks work; it never overrides a contract document.
+
 The data, state, LLM, and API contracts are the implementation source of truth.
 If a product or development plan conflicts with a contract, do not silently choose
 one. Update `docs/DECISIONS.md` and the affected contract first.
