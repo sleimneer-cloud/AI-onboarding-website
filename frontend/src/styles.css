@@ -1,0 +1,170 @@
+:root {
+  color: #17201c;
+  background: #eef2ec;
+  font-family:
+    Inter, Pretendard, "Noto Sans KR", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top right, rgb(205 229 210 / 70%), transparent 38rem),
+    #eef2ec;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.app-shell {
+  width: min(1120px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 72px 0 32px;
+}
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  min-height: 420px;
+  padding: clamp(32px, 6vw, 72px);
+  border: 1px solid rgb(255 255 255 / 65%);
+  border-radius: 32px;
+  background: #17201c;
+  color: #f6f7f2;
+  box-shadow: 0 30px 80px rgb(40 59 49 / 16%);
+}
+
+.hero::after {
+  position: absolute;
+  right: -110px;
+  bottom: -150px;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  background: #a8e6b5;
+  content: "";
+  opacity: 0.82;
+}
+
+.eyebrow {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 72px;
+  color: #a8e6b5;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(3.2rem, 10vw, 7rem);
+  font-weight: 650;
+  letter-spacing: -0.07em;
+  line-height: 0.95;
+}
+
+.hero-copy > p {
+  max-width: 620px;
+  margin: 32px 0 0;
+  color: #d9dfd8;
+  font-size: clamp(1rem, 2.2vw, 1.25rem);
+  line-height: 1.75;
+}
+
+.status-badge {
+  position: absolute;
+  z-index: 1;
+  right: clamp(24px, 4vw, 48px);
+  bottom: clamp(24px, 4vw, 48px);
+  padding: 10px 16px;
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-radius: 999px;
+  background: rgb(16 27 21 / 72%);
+  color: #dff9e4;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.foundation-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.foundation-card {
+  min-height: 220px;
+  padding: 28px;
+  border: 1px solid #dfe6dc;
+  border-radius: 24px;
+  background: rgb(255 255 255 / 76%);
+}
+
+.foundation-card > span {
+  color: #6f7e73;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.foundation-card h2 {
+  margin: 36px 0 12px;
+  font-size: 1.45rem;
+  letter-spacing: -0.035em;
+}
+
+.foundation-card p {
+  margin: 0;
+  color: #637068;
+  line-height: 1.65;
+}
+
+footer {
+  padding: 32px 4px 0;
+  color: #748078;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 760px) {
+  .app-shell {
+    width: min(100% - 24px, 1120px);
+    padding-top: 24px;
+  }
+
+  .hero {
+    min-height: 500px;
+    border-radius: 24px;
+  }
+
+  .eyebrow {
+    margin-bottom: 56px;
+  }
+
+  .status-badge {
+    right: auto;
+    left: 28px;
+  }
+
+  .foundation-grid {
+    grid-template-columns: 1fr;
+  }
+}
