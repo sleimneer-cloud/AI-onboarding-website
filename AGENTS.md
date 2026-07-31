@@ -57,3 +57,91 @@ For every implementation task:
 
 When project commands are created, add their exact Windows/local and Replit/Linux forms
 to this file and `README.md`.
+
+## Project commands
+
+Run commands from the repository root. Do not run migrations, seeds, or AI calls during
+application startup.
+
+### Windows/PowerShell setup
+
+```powershell
+Copy-Item .env.example .env
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -e "backend[dev]"
+pnpm --dir frontend install --frozen-lockfile
+```
+
+### Windows/PowerShell run
+
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --app-dir backend --reload --host 127.0.0.1 --port 8000
+pnpm --dir frontend dev
+Invoke-RestMethod http://127.0.0.1:8000/health
+Invoke-WebRequest http://127.0.0.1:5173
+```
+
+### Windows/PowerShell verify
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest backend/tests
+.\.venv\Scripts\python.exe -m ruff check backend
+pnpm --dir frontend test
+pnpm --dir frontend typecheck
+pnpm --dir frontend build
+pnpm --dir frontend test:e2e:list
+```
+
+For the browser smoke test:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+pnpm --dir frontend exec playwright install chromium
+pnpm --dir frontend test:e2e
+```
+
+### Replit/Linux setup
+
+```bash
+cp .env.example .env
+python3 -m venv .venv
+.venv/bin/python -m pip install --upgrade pip
+.venv/bin/python -m pip install -e "backend[dev]"
+pnpm --dir frontend install --frozen-lockfile
+```
+
+### Replit/Linux run
+
+```bash
+.venv/bin/python -m uvicorn app.main:app --app-dir backend --reload --host 0.0.0.0 --port 8000
+pnpm --dir frontend dev --host 0.0.0.0
+curl --fail http://127.0.0.1:8000/health
+curl --fail http://127.0.0.1:5173
+```
+
+### Replit/Linux verify
+
+```bash
+.venv/bin/python -m pytest backend/tests
+.venv/bin/python -m ruff check backend
+pnpm --dir frontend test
+pnpm --dir frontend typecheck
+pnpm --dir frontend build
+pnpm --dir frontend test:e2e:list
+```
+
+For the browser smoke test:
+
+```bash
+. .venv/bin/activate
+pnpm --dir frontend exec playwright install chromium
+pnpm --dir frontend test:e2e
+```
+
+### Production/Replit start
+
+```bash
+pnpm --dir frontend build
+.venv/bin/python -m uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port "${PORT:-8000}"
+```
