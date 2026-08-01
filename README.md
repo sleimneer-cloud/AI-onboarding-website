@@ -1,8 +1,8 @@
 # IX Value Loop
 
 인터엑스 핵심가치와 신규 입사자의 실제 업무를 연결하는 온보딩 포털입니다. 현재
-저장소는 FastAPI 백엔드, React/Vite/TypeScript 프론트엔드, 테스트 및 단일 도메인
-배포를 위한 project scaffold를 제공합니다.
+저장소는 FastAPI 백엔드, React/Vite/TypeScript 프론트엔드, PostgreSQL 데이터 모델,
+Alembic migration, 허구 데모 seed/reset 및 단일 도메인 배포 구조를 제공합니다.
 
 구현 전에는 `AGENTS.md`에 정의된 순서대로 `docs/` 계약 문서를 읽어야 합니다. 데이터,
 상태, LLM, API 계약이 제품 및 개발계획보다 우선합니다.
@@ -13,13 +13,15 @@
 ## 현재 범위
 
 - FastAPI 애플리케이션과 `/health`, `/ready`
+- SQLAlchemy 2 기반 15개 PostgreSQL 테이블과 8개 Enum
+- Alembic 초기 migration과 model/migration drift 검사
+- 반복 실행 가능한 허구 데모 seed 및 allowlist reset
 - React/Vite/TypeScript 애플리케이션 shell
 - pytest, Vitest, Playwright 기본 구성
 - Vite production build를 FastAPI가 같은 origin에서 제공하는 구조
 - 환경 변수와 Windows/Replit 실행 명령
 
-아직 DB 테이블, Alembic migration, 인증, 업무 API, Evidence Card 및 LLM 기능은
-구현하지 않았습니다.
+아직 인증, 업무 API, Evidence Card, LLM 및 사용자 화면 기능은 구현하지 않았습니다.
 
 ## 요구 환경
 
@@ -42,8 +44,12 @@ Replit/Linux:
 cp .env.example .env
 ```
 
-`DATABASE_URL`이 비어 있으면 서버는 정상 실행되고 `/health`는 200을 반환하지만,
+`DATABASE_URL`이 비어 있거나 migration revision이 기대값과 다르면 서버는 실행되지만
 `/ready`는 계약에 따라 503을 반환합니다. 실제 `.env` 파일은 커밋하지 않습니다.
+
+`DEMO_ACCOUNT_PASSWORD`는 허구 데모 계정의 seed 입력이며 DB에는 Argon2id hash만
+저장합니다. `DEMO_REFERENCE_DATE`의 기본값은 재현 가능한 시연을 위해
+`2026-08-02`로 고정합니다.
 
 ## Windows/PowerShell 설치
 
@@ -55,6 +61,21 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e "backend[dev]"
 pnpm --dir frontend install --frozen-lockfile
 ```
+
+## Windows/PowerShell 데이터베이스
+
+`.env`에 PostgreSQL 16 이상의 `DATABASE_URL`을 설정한 뒤 실행합니다.
+
+```powershell
+.\.venv\Scripts\python.exe -m alembic -c backend/alembic.ini upgrade head
+.\.venv\Scripts\python.exe -m alembic -c backend/alembic.ini check
+$env:APP_ENV='demo'
+.\.venv\Scripts\python.exe -m app.scripts.seed_demo
+.\.venv\Scripts\python.exe -m app.scripts.reset_demo
+```
+
+`reset_demo`는 `APP_ENV=demo` 또는 `APP_ENV=test`에서만 동작하며 allowlist 밖의 데이터는
+변경하지 않습니다. 애플리케이션 startup에서는 migration이나 seed를 실행하지 않습니다.
 
 ## Windows/PowerShell 개발 서버
 
@@ -88,6 +109,15 @@ pnpm --dir frontend build
 pnpm --dir frontend test:e2e:list
 ```
 
+PostgreSQL 전용 migration·constraint·seed·readiness 테스트는 이름에 `test`가 포함된 폐기
+가능한 DB에서만 실행합니다. 테스트가 migration downgrade를 수행하므로 공유 DB URL을
+사용하면 안 됩니다.
+
+```powershell
+$env:TEST_DATABASE_URL='postgresql+psycopg://postgres:postgres@127.0.0.1:5432/ix_value_loop_test'
+.\.venv\Scripts\python.exe -m pytest backend/tests/db/test_postgres_phase1.py
+```
+
 브라우저가 설치된 환경에서 전체 scaffold E2E를 실행하려면 먼저 가상환경을 활성화합니다.
 
 ```powershell
@@ -105,6 +135,17 @@ python3 -m venv .venv
 .venv/bin/python -m pip install --upgrade pip
 .venv/bin/python -m pip install -e "backend[dev]"
 pnpm --dir frontend install --frozen-lockfile
+```
+
+## Replit/Linux 데이터베이스
+
+`.env` 또는 Replit Secrets에 PostgreSQL 16 이상의 `DATABASE_URL`을 설정합니다.
+
+```bash
+.venv/bin/python -m alembic -c backend/alembic.ini upgrade head
+.venv/bin/python -m alembic -c backend/alembic.ini check
+APP_ENV=demo .venv/bin/python -m app.scripts.seed_demo
+APP_ENV=demo .venv/bin/python -m app.scripts.reset_demo
 ```
 
 ## Replit/Linux 개발 서버
@@ -139,6 +180,13 @@ pnpm --dir frontend build
 pnpm --dir frontend test:e2e:list
 ```
 
+폐기 가능한 PostgreSQL 테스트 DB에서 Phase 1 통합 테스트를 실행합니다.
+
+```bash
+TEST_DATABASE_URL='postgresql+psycopg://postgres:postgres@127.0.0.1:5432/ix_value_loop_test' \
+  .venv/bin/python -m pytest backend/tests/db/test_postgres_phase1.py
+```
+
 브라우저가 설치된 환경에서:
 
 ```bash
@@ -150,10 +198,12 @@ pnpm --dir frontend test:e2e
 ## Production/Replit 실행
 
 Migration과 seed는 애플리케이션 startup에서 자동 실행하지 않습니다. 배포 단계에서
-명시적으로 실행해야 합니다. 현재 scaffold에는 아직 migration과 seed가 없습니다.
+명시적으로 실행해야 합니다.
 
 ```bash
 pnpm --dir frontend build
+.venv/bin/python -m alembic -c backend/alembic.ini upgrade head
+APP_ENV=demo .venv/bin/python -m app.scripts.seed_demo
 .venv/bin/python -m uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port "${PORT:-8000}"
 ```
 
@@ -163,5 +213,5 @@ production build 후 FastAPI가 `/`와 React client route, `/assets/*` 파일을
 ## 상태 확인
 
 - `GET /health`: DB와 Groq를 호출하지 않고 프로세스 상태만 확인합니다.
-- `GET /ready`: 제한 시간 내 PostgreSQL `SELECT 1`을 실행합니다. Groq는 확인하지
-  않습니다.
+- `GET /ready`: 제한 시간 내 PostgreSQL `SELECT 1`과 Alembic revision을 확인합니다.
+  Groq는 확인하지 않습니다.

@@ -1,3 +1,4 @@
+from datetime import date
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
@@ -22,6 +23,8 @@ class Settings(BaseSettings):
     app_version: str = "0.1.0"
     database_url: SecretStr | None = None
     database_ready_timeout_seconds: float = Field(default=2.0, gt=0, le=10)
+    demo_account_password: SecretStr = SecretStr("DemoPassword!")
+    demo_reference_date: date = date(2026, 8, 2)
     frontend_dist_dir: Path = DEFAULT_FRONTEND_DIST
 
     @field_validator("database_url", mode="before")
