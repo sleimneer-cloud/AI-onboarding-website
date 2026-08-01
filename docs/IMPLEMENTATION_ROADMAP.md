@@ -1,7 +1,7 @@
 # IX Value Loop 구현 로드맵
 
 - 문서 상태: 작업 진행 추적용
-- 최종 갱신일: 2026-07-31
+- 최종 갱신일: 2026-08-02
 - 대상: IX Value Loop MVP
 
 ## 1. 문서 역할
@@ -41,7 +41,7 @@
 | 단계 | 기능 영역 | 상태 | 선행 단계 | 브랜치/PR |
 |---:|---|---|---|---|
 | 0 | Project Scaffold | `completed` | 문서 계약 확정 | `codex/project-scaffold`, PR #2 병합 |
-| 1 | PostgreSQL·Alembic·Demo Seed | `in_progress` | Phase 0 병합 | `codex/database-schema` |
+| 1 | PostgreSQL·Alembic·Demo Seed | `in_review` | Phase 0 병합 | `codex/database-schema`, PR #4 |
 | 2 | 인증·Session·CSRF·권한 | `not_started` | Phase 1 | 예정 |
 | 3 | 직원 Dashboard·Action·Evidence | `not_started` | Phase 2 | 예정 |
 | 4 | LLM·Mock·Evidence Card | `not_started` | Phase 3 | 예정 |
@@ -175,9 +175,10 @@ DB와 도메인 기능을 구현하기 전에 backend와 frontend를 독립적�
 
 ## 6. Phase 1 — PostgreSQL·Alembic·Demo Seed
 
-- 상태: `in_progress`
+- 상태: `in_review`
 - 권장 브랜치: `codex/database-schema`
 - 선행 조건: Phase 0 PR이 `main`에 병합됨
+- PR: [#4](https://github.com/sleimneer-cloud/AI-onboarding-website/pull/4)
 
 ### 목표
 
@@ -254,6 +255,20 @@ Migration과 model registry는 여러 에이전트가 병렬로 수정하지 않
 - PostgreSQL에서 DB 집중 테스트 통과
 - 실제 `DATABASE_URL`로 `/ready` 200 확인
 - 실행 명령을 `README.md`와 `AGENTS.md`에 추가
+
+### 현재 검증 결과
+
+| 검증 | 결과 |
+|---|---|
+| 로컬 pytest (`not postgres`) | 23 passed |
+| GitHub Actions PostgreSQL 16 | 29 passed |
+| Alembic upgrade → downgrade → re-upgrade | 통과 |
+| Alembic model/migration drift check | 통과 |
+| 허구 demo seed 2회 및 reset | 통과 |
+| 실제 PostgreSQL `/ready` | 200 |
+| Ruff | 통과 |
+| Python dependency check | 통과 |
+| Alembic offline upgrade/downgrade SQL | 통과 |
 
 ## 7. Phase 2 — 인증·Session·CSRF·권한
 
@@ -473,12 +488,9 @@ active assignment → completed
 
 ## 13. 현재 검증 공백과 후속 확인
 
-다음 항목은 scaffold 실패가 아니라 후속 단계에서 확인할 검증 공백이다.
+다음 항목은 현재 단계 실패가 아니라 후속 단계에서 확인할 검증 공백이다.
 
-- `docs/DEMO_SCENARIO.md`가 현재 비어 있음
-- 실제 PostgreSQL 연결을 사용한 `/ready` 200 smoke는 Phase 1에서 수행
 - Playwright Chromium 실제 browser run은 아직 수행하지 않았으며 Phase 6 전에 필수
-- GitHub Actions CI는 아직 추가하지 않음
 - Replit runtime과 실제 `PORT`, PostgreSQL URL 형식은 배포 단계에서 확인
 
 ## 14. 문서 갱신 규칙
