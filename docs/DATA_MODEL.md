@@ -133,7 +133,7 @@ Autoscale 다중 인스턴스에서도 동작하는 서버 측 세션이다.
 | 컬럼 | 타입 | 제약/설명 |
 |---|---|---|
 | `id` | `uuid` | PK |
-| `user_id` | `uuid` | FK `users.id`, `ON DELETE CASCADE` |
+| `user_id` | `uuid` | `NOT NULL`, FK `users.id`, `ON DELETE CASCADE` |
 | `token_hash` | `char(64)` | `NOT NULL UNIQUE`, 원본 토큰의 SHA-256 |
 | `csrf_token_hash` | `char(64)` | `NOT NULL`, 원본 CSRF 토큰의 SHA-256 |
 | `expires_at` | `timestamptz` | `NOT NULL` |
@@ -229,10 +229,10 @@ MVP 정책:
 | 컬럼 | 타입 | 제약/설명 |
 |---|---|---|
 | `id` | `uuid` | PK |
-| `profile_id` | `uuid` | FK `onboarding_profiles.id`, cascade |
+| `profile_id` | `uuid` | `NOT NULL`, FK `onboarding_profiles.id`, cascade |
 | `week_number` | `smallint` | `NOT NULL`, check `1..12` |
-| `curriculum_week_id` | `uuid` | FK `curriculum_weeks.id`, restrict |
-| `core_value_id` | `uuid` | FK `core_values.id`, restrict, 스냅숏 |
+| `curriculum_week_id` | `uuid` | `NOT NULL`, FK `curriculum_weeks.id`, restrict |
+| `core_value_id` | `uuid` | `NOT NULL`, FK `core_values.id`, restrict, 스냅숏 |
 | `stage` | `onboarding_stage` | `NOT NULL`, 스냅숏 |
 | `starts_on` | `date` | `NOT NULL` |
 | `ends_on` | `date` | `NOT NULL`, `starts_on + 6일` |
@@ -242,6 +242,7 @@ MVP 정책:
 
 - unique `(profile_id, week_number)`
 - check `ends_on >= starts_on`
+- seed/service는 정확한 7일 구간인 `ends_on = starts_on + 6일`을 보장한다.
 
 ### 5.7 `work_assignments`
 
@@ -304,7 +305,7 @@ MVP 정책:
 | 컬럼 | 타입 | 제약/설명 |
 |---|---|---|
 | `id` | `uuid` | PK |
-| `assignment_id` | `uuid` | FK `work_assignments.id`, cascade |
+| `assignment_id` | `uuid` | `NOT NULL`, FK `work_assignments.id`, cascade |
 | `source_kind` | `action_source_kind` | `NOT NULL` |
 | `source_action_id` | `uuid` | nullable FK `action_library.id`, restrict |
 | `created_by_user_id` | `uuid` | nullable FK `users.id`, restrict |
@@ -357,8 +358,8 @@ Evidence가 어떤 완료 Action을 근거로 삼았는지 저장한다.
 
 | 컬럼 | 타입 | 제약/설명 |
 |---|---|---|
-| `evidence_id` | `uuid` | FK `evidence_submissions.id`, cascade |
-| `assigned_action_id` | `uuid` | FK `assigned_actions.id`, restrict |
+| `evidence_id` | `uuid` | `NOT NULL`, FK `evidence_submissions.id`, cascade |
+| `assigned_action_id` | `uuid` | `NOT NULL`, FK `assigned_actions.id`, restrict |
 
 PK/unique: `(evidence_id, assigned_action_id)`
 
@@ -369,7 +370,7 @@ AI가 링크 내용을 가져오지 않는 참고 링크다.
 | 컬럼 | 타입 | 제약/설명 |
 |---|---|---|
 | `id` | `uuid` | PK |
-| `evidence_id` | `uuid` | FK `evidence_submissions.id`, cascade |
+| `evidence_id` | `uuid` | `NOT NULL`, FK `evidence_submissions.id`, cascade |
 | `external_url` | `text` | `NOT NULL`, HTTP/HTTPS만 허용 |
 | `title` | `varchar(200)` | `NOT NULL` |
 | `description` | `varchar(1000)` | `NOT NULL` |
@@ -499,6 +500,7 @@ Groq 네트워크 호출 중에는 DB transaction을 열린 상태로 유지하�
 
 ## 9. Seed 및 reset 규칙
 
+- Phase 1의 구체적인 허구 fixture와 stable key는 `docs/DEMO_SCENARIO.md`를 따른다.
 - 모든 seed는 stable key로 upsert한다.
 - 사용자는 `demo_fixture_key`, 업무는 `seed_key`, Action Library는 `library_key`를 사용한다.
 - reset 대상은 allowlist로 정의된 데모 fixture뿐이다.

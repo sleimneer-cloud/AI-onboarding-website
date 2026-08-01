@@ -24,6 +24,9 @@
 | D-015 | 인증 후 mutation은 Origin과 CSRF token을 모두 검사한다. | cookie 기반 인증의 CSRF 위험을 줄인다. | API |
 | D-016 | 실사용 파일 업로드, 외부 링크 내용 수집, HR 쓰기 관리 기능은 MVP에서 제외한다. | 개인정보·기밀 위험과 개발 범위를 줄인다. | AGENTS, API |
 | D-017 | 9~12주차 custom Action을 수용할 필드는 미리 두되 UI는 구현하지 않는다. | 향후 자율 설계를 위한 파괴적 schema 변경을 줄인다. | DATA_MODEL |
+| D-018 | ERD에서 필수 관계로 정의된 FK는 표에 nullable 표시가 없더라도 `NOT NULL`로 구현하고 DATA_MODEL 표에 이를 명시한다. | 고아 세션·주차·Action·링크가 생성되는 것을 DB에서 차단한다. | DATA_MODEL |
+| D-019 | `onboarding_weeks`의 DB check는 계약에 명시된 `ends_on >= starts_on`을 사용하고, 정확한 7일 구간은 seed/service가 `ends_on = starts_on + 6일`로 보장한다. 커리큘럼의 주차별 stage는 DB check로도 보호한다. | 문서의 설명과 명시 제약을 모두 보존하면서 잘못된 공식 커리큘럼 입력을 조기에 차단한다. | DATA_MODEL |
+| D-020 | Phase 1 데모 계정·가치 코드/설명·Action·업무·stable key는 `DEMO_SCENARIO.md`의 허구 fixture 계약을 사용한다. 실제 공식 카탈로그나 임직원 데이터로 간주하지 않는다. | 비어 있던 fixture 입력을 재현 가능하게 고정하고 실제 정보의 임의 추론을 피한다. | DATA_MODEL, DEMO_SCENARIO |
 
 ## 구현 중 새 결정이 필요한 경우
 

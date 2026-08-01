@@ -86,6 +86,19 @@ Invoke-RestMethod http://127.0.0.1:8000/health
 Invoke-WebRequest http://127.0.0.1:5173
 ```
 
+### Windows/PowerShell database
+
+Use a configured PostgreSQL 16+ `DATABASE_URL`. Migration and seed never run at
+application startup.
+
+```powershell
+.\.venv\Scripts\python.exe -m alembic -c backend/alembic.ini upgrade head
+.\.venv\Scripts\python.exe -m alembic -c backend/alembic.ini check
+$env:APP_ENV='demo'
+.\.venv\Scripts\python.exe -m app.scripts.seed_demo
+.\.venv\Scripts\python.exe -m app.scripts.reset_demo
+```
+
 ### Windows/PowerShell verify
 
 ```powershell
@@ -95,6 +108,14 @@ pnpm --dir frontend test
 pnpm --dir frontend typecheck
 pnpm --dir frontend build
 pnpm --dir frontend test:e2e:list
+```
+
+Use only a disposable PostgreSQL database whose name contains `test`; the migration test
+performs downgrade and re-upgrade.
+
+```powershell
+$env:TEST_DATABASE_URL='postgresql+psycopg://postgres:postgres@127.0.0.1:5432/ix_value_loop_test'
+.\.venv\Scripts\python.exe -m pytest backend/tests/db/test_postgres_phase1.py
 ```
 
 For the browser smoke test:
@@ -124,6 +145,15 @@ curl --fail http://127.0.0.1:8000/health
 curl --fail http://127.0.0.1:5173
 ```
 
+### Replit/Linux database
+
+```bash
+.venv/bin/python -m alembic -c backend/alembic.ini upgrade head
+.venv/bin/python -m alembic -c backend/alembic.ini check
+APP_ENV=demo .venv/bin/python -m app.scripts.seed_demo
+APP_ENV=demo .venv/bin/python -m app.scripts.reset_demo
+```
+
 ### Replit/Linux verify
 
 ```bash
@@ -133,6 +163,13 @@ pnpm --dir frontend test
 pnpm --dir frontend typecheck
 pnpm --dir frontend build
 pnpm --dir frontend test:e2e:list
+```
+
+Use only a disposable PostgreSQL database whose name contains `test`.
+
+```bash
+TEST_DATABASE_URL='postgresql+psycopg://postgres:postgres@127.0.0.1:5432/ix_value_loop_test' \
+  .venv/bin/python -m pytest backend/tests/db/test_postgres_phase1.py
 ```
 
 For the browser smoke test:
@@ -147,5 +184,7 @@ pnpm --dir frontend test:e2e
 
 ```bash
 pnpm --dir frontend build
+.venv/bin/python -m alembic -c backend/alembic.ini upgrade head
+APP_ENV=demo .venv/bin/python -m app.scripts.seed_demo
 .venv/bin/python -m uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port "${PORT:-8000}"
 ```

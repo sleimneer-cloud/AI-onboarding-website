@@ -41,7 +41,7 @@
 | 단계 | 기능 영역 | 상태 | 선행 단계 | 브랜치/PR |
 |---:|---|---|---|---|
 | 0 | Project Scaffold | `completed` | 문서 계약 확정 | `codex/project-scaffold`, PR #2 병합 |
-| 1 | PostgreSQL·Alembic·Demo Seed | `not_started` | Phase 0 병합 | 예정 |
+| 1 | PostgreSQL·Alembic·Demo Seed | `in_progress` | Phase 0 병합 | `codex/database-schema` |
 | 2 | 인증·Session·CSRF·권한 | `not_started` | Phase 1 | 예정 |
 | 3 | 직원 Dashboard·Action·Evidence | `not_started` | Phase 2 | 예정 |
 | 4 | LLM·Mock·Evidence Card | `not_started` | Phase 3 | 예정 |
@@ -175,7 +175,7 @@ DB와 도메인 기능을 구현하기 전에 backend와 frontend를 독립적�
 
 ## 6. Phase 1 — PostgreSQL·Alembic·Demo Seed
 
-- 상태: `not_started`
+- 상태: `in_progress`
 - 권장 브랜치: `codex/database-schema`
 - 선행 조건: Phase 0 PR이 `main`에 병합됨
 
