@@ -13,7 +13,7 @@ from app.db.session import configured_database_url
 config = context.config
 
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 settings = Settings()
 config.set_main_option("sqlalchemy.url", configured_database_url(settings).replace("%", "%%"))

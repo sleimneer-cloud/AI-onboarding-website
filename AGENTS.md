@@ -115,7 +115,7 @@ performs downgrade and re-upgrade.
 
 ```powershell
 $env:TEST_DATABASE_URL='postgresql+psycopg://postgres:postgres@127.0.0.1:5432/ix_value_loop_test'
-.\.venv\Scripts\python.exe -m pytest backend/tests/db/test_postgres_phase1.py
+.\.venv\Scripts\python.exe -m pytest backend/tests/db/test_postgres_phase1.py backend/tests/db/test_postgres_phase2.py
 ```
 
 For the browser smoke test:
@@ -169,7 +169,7 @@ Use only a disposable PostgreSQL database whose name contains `test`.
 
 ```bash
 TEST_DATABASE_URL='postgresql+psycopg://postgres:postgres@127.0.0.1:5432/ix_value_loop_test' \
-  .venv/bin/python -m pytest backend/tests/db/test_postgres_phase1.py
+  .venv/bin/python -m pytest backend/tests/db/test_postgres_phase1.py backend/tests/db/test_postgres_phase2.py
 ```
 
 For the browser smoke test:
@@ -186,5 +186,8 @@ pnpm --dir frontend test:e2e
 pnpm --dir frontend build
 .venv/bin/python -m alembic -c backend/alembic.ini upgrade head
 APP_ENV=demo .venv/bin/python -m app.scripts.seed_demo
-.venv/bin/python -m uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port "${PORT:-8000}"
+.venv/bin/python -m uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port "${PORT:-8000}" --no-proxy-headers
 ```
+
+Replit의 전달 header와 trusted proxy IP 범위를 Phase 6에서 검증하기 전까지
+`--no-proxy-headers`를 유지한다. `FORWARDED_ALLOW_IPS=*`는 사용하지 않는다.

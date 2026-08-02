@@ -16,12 +16,15 @@ Alembic migration, 허구 데모 seed/reset 및 단일 도메인 배포 구조�
 - SQLAlchemy 2 기반 15개 PostgreSQL 테이블과 8개 Enum
 - Alembic 초기 migration과 model/migration drift 검사
 - 반복 실행 가능한 허구 데모 seed 및 allowlist reset
+- normalized email·Argon2id 기반 로그인과 DB opaque session
+- Origin·CSRF 보호, 로그인 rate limit, 역할·소유권 검사 기반
+- `/api/v1/auth/login`, `/me`, `/csrf`, `/logout`
 - React/Vite/TypeScript 애플리케이션 shell
 - pytest, Vitest, Playwright 기본 구성
 - Vite production build를 FastAPI가 같은 origin에서 제공하는 구조
 - 환경 변수와 Windows/Replit 실행 명령
 
-아직 인증, 업무 API, Evidence Card, LLM 및 사용자 화면 기능은 구현하지 않았습니다.
+아직 직원 업무 API, Evidence Card, LLM 및 사용자 화면 기능은 구현하지 않았습니다.
 
 ## 요구 환경
 
@@ -46,6 +49,10 @@ cp .env.example .env
 
 `DATABASE_URL`이 비어 있거나 migration revision이 기대값과 다르면 서버는 실행되지만
 `/ready`는 계약에 따라 503을 반환합니다. 실제 `.env` 파일은 커밋하지 않습니다.
+
+인증 기능에는 32바이트 이상의 무작위 `SESSION_SECRET`이 필요합니다. Production에서는
+값이 없으면 설정 검증에 실패합니다. `APP_ORIGIN`은 브라우저가 사용하는 정확한 단일
+origin으로 설정하며 path나 trailing slash를 포함하지 않습니다.
 
 `DEMO_ACCOUNT_PASSWORD`는 허구 데모 계정의 seed 입력이며 DB에는 Argon2id hash만
 저장합니다. `DEMO_REFERENCE_DATE`의 기본값은 재현 가능한 시연을 위해
@@ -115,7 +122,7 @@ PostgreSQL 전용 migration·constraint·seed·readiness 테스트는 이름에 
 
 ```powershell
 $env:TEST_DATABASE_URL='postgresql+psycopg://postgres:postgres@127.0.0.1:5432/ix_value_loop_test'
-.\.venv\Scripts\python.exe -m pytest backend/tests/db/test_postgres_phase1.py
+.\.venv\Scripts\python.exe -m pytest backend/tests/db/test_postgres_phase1.py backend/tests/db/test_postgres_phase2.py
 ```
 
 브라우저가 설치된 환경에서 전체 scaffold E2E를 실행하려면 먼저 가상환경을 활성화합니다.
@@ -184,7 +191,7 @@ pnpm --dir frontend test:e2e:list
 
 ```bash
 TEST_DATABASE_URL='postgresql+psycopg://postgres:postgres@127.0.0.1:5432/ix_value_loop_test' \
-  .venv/bin/python -m pytest backend/tests/db/test_postgres_phase1.py
+  .venv/bin/python -m pytest backend/tests/db/test_postgres_phase1.py backend/tests/db/test_postgres_phase2.py
 ```
 
 브라우저가 설치된 환경에서:
@@ -204,11 +211,15 @@ Migration과 seed는 애플리케이션 startup에서 자동 실행하지 않습
 pnpm --dir frontend build
 .venv/bin/python -m alembic -c backend/alembic.ini upgrade head
 APP_ENV=demo .venv/bin/python -m app.scripts.seed_demo
-.venv/bin/python -m uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port "${PORT:-8000}"
+.venv/bin/python -m uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port "${PORT:-8000}" --no-proxy-headers
 ```
 
 production build 후 FastAPI가 `/`와 React client route, `/assets/*` 파일을 제공합니다.
 `/api/*`, `/health`, `/ready`는 SPA fallback으로 처리하지 않습니다.
+
+Replit의 전달 header와 trusted proxy IP 범위를 Phase 6에서 검증하기 전까지는
+`--no-proxy-headers`를 유지하고 `FORWARDED_ALLOW_IPS=*`를 사용하지 않습니다.
+Production cookie와 CSRF Origin은 각각 `APP_ENV`와 `APP_ORIGIN` 설정으로 결정합니다.
 
 ## 상태 확인
 

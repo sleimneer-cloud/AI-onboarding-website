@@ -155,7 +155,7 @@ IP 원문은 저장하지 않고 서버 secret을 이용한 HMAC 결과만 저�
 | 컬럼 | 타입 | 제약/설명 |
 |---|---|---|
 | `id` | `uuid` | PK |
-| `subject_hash` | `char(64)` | `NOT NULL UNIQUE`, normalized email + client IP의 HMAC |
+| `subject_hash` | `char(64)` | `NOT NULL UNIQUE`, normalized email + 서버가 관측한 client address의 HMAC |
 | `window_started_at` | `timestamptz` | `NOT NULL` |
 | `failure_count` | `smallint` | `NOT NULL DEFAULT 0` |
 | `blocked_until` | `timestamptz` | nullable |
@@ -167,6 +167,11 @@ MVP 정책:
 - 5회 초과 시 15분 차단
 - 성공 로그인 시 해당 subject 행을 초기화
 - 오래된 행은 로그인 요청 시 또는 관리 스크립트에서 정리
+- Replit trusted proxy 범위를 검증하기 전에는 전달 헤더를 무시하고 ASGI 연결의 직접
+  peer 주소를 client address 입력으로 사용
+- `Forwarded`, `X-Forwarded-For`와 다른 client address 원문은 DB나 로그에 저장하지 않음
+- 검증된 proxy 전달 헤더를 사용하려면 먼저 `DECISIONS.md`와 API 계약을 갱신하고
+  정확한 trusted proxy IP 범위를 지정해야 하며 wildcard 신뢰는 허용하지 않음
 
 ### 5.3 `onboarding_profiles`
 

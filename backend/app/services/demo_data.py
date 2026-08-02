@@ -5,7 +5,6 @@ from datetime import UTC, datetime, time, timedelta
 from typing import Any
 from uuid import UUID, uuid4
 
-from argon2 import PasswordHasher
 from sqlalchemy import delete, func, select
 from sqlalchemy.dialects.postgresql import insert as postgresql_insert
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -33,6 +32,7 @@ from app.models.enums import (
     UserRole,
     WorkType,
 )
+from app.security.passwords import get_password_manager
 
 DEMO_EMPLOYEE_KEY = "demo.employee"
 DEMO_MANAGER_KEY = "demo.manager"
@@ -179,7 +179,9 @@ async def _upsert_id(
 async def seed_demo_data(session: AsyncSession, settings: Settings) -> None:
     """Upsert the fictional Phase 1 fixture without committing the caller's transaction."""
 
-    password_hash = PasswordHasher().hash(settings.demo_account_password.get_secret_value())
+    password_hash = get_password_manager().hash(
+        settings.demo_account_password.get_secret_value()
+    )
     user_specs = (
         (
             DEMO_EMPLOYEE_KEY,

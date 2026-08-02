@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 from collections.abc import Iterator
 from datetime import UTC, datetime
@@ -133,6 +134,16 @@ def test_migration_round_trip_and_postgresql_types(postgres_url: str) -> None:
 def test_migration_matches_model_metadata(postgres_url: str) -> None:
     del postgres_url
     command.check(alembic_config())
+
+
+def test_migration_does_not_disable_application_loggers(postgres_url: str) -> None:
+    del postgres_url
+    application_logger = logging.getLogger("app.core.exception_handlers")
+    application_logger.disabled = False
+
+    command.check(alembic_config())
+
+    assert application_logger.disabled is False
 
 
 def test_actual_schema_indexes_and_delete_policies(postgres_url: str) -> None:

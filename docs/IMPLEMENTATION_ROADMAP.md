@@ -41,8 +41,8 @@
 | 단계 | 기능 영역 | 상태 | 선행 단계 | 브랜치/PR |
 |---:|---|---|---|---|
 | 0 | Project Scaffold | `completed` | 문서 계약 확정 | `codex/project-scaffold`, PR #2 병합 |
-| 1 | PostgreSQL·Alembic·Demo Seed | `in_review` | Phase 0 병합 | `codex/database-schema`, PR #4 |
-| 2 | 인증·Session·CSRF·권한 | `not_started` | Phase 1 | 예정 |
+| 1 | PostgreSQL·Alembic·Demo Seed | `completed` | Phase 0 병합 | `codex/database-schema`, PR #4 병합 |
+| 2 | 인증·Session·CSRF·권한 | `in_review` | Phase 1 | `codex/auth-security`, PR #5 |
 | 3 | 직원 Dashboard·Action·Evidence | `not_started` | Phase 2 | 예정 |
 | 4 | LLM·Mock·Evidence Card | `not_started` | Phase 3 | 예정 |
 | 5 | 팀장 피드백·Report·HR 조회 | `not_started` | Phase 4 | 예정 |
@@ -175,8 +175,8 @@ DB와 도메인 기능을 구현하기 전에 backend와 frontend를 독립적�
 
 ## 6. Phase 1 — PostgreSQL·Alembic·Demo Seed
 
-- 상태: `in_review`
-- 권장 브랜치: `codex/database-schema`
+- 상태: `completed`
+- 브랜치: `codex/database-schema`
 - 선행 조건: Phase 0 PR이 `main`에 병합됨
 - PR: [#4](https://github.com/sleimneer-cloud/AI-onboarding-website/pull/4)
 
@@ -270,11 +270,16 @@ Migration과 model registry는 여러 에이전트가 병렬로 수정하지 않
 | Python dependency check | 통과 |
 | Alembic offline upgrade/downgrade SQL | 통과 |
 
+### 병합 결과
+
+- PR #4가 `main`에 병합됨
+
 ## 7. Phase 2 — 인증·Session·CSRF·권한
 
-- 상태: `not_started`
-- 권장 브랜치: `codex/auth-security`
+- 상태: `in_review`
+- 브랜치: `codex/auth-security`
 - 선행 조건: Phase 1
+- PR: [#5](https://github.com/sleimneer-cloud/AI-onboarding-website/pull/5)
 
 ### 구현 기능
 
@@ -286,6 +291,8 @@ Migration과 model registry는 여러 에이전트가 병렬로 수정하지 않
 - 로그인 포함 mutation의 Origin 검사
 - 인증 후 mutation의 CSRF 검사
 - DB 기반 로그인 rate limit
+- Replit 검증 전 proxy header 비신뢰와 직접 peer 기반 rate-limit subject
+- `APP_ENV` 기반 cookie와 `APP_ORIGIN` 기반 Origin 판단
 - logout revoke와 session expiry
 - employee, manager, hr role 검사
 - 다른 사용자 resource를 404로 숨기는 ownership 검사
@@ -302,9 +309,35 @@ Migration과 model registry는 여러 에이전트가 병렬로 수정하지 않
 - 성공·실패·비활성 계정·rate limit 테스트
 - session expiry와 logout revoke 테스트
 - Origin과 CSRF 실패 테스트
+- 위조된 `Forwarded`와 `X-Forwarded-For`가 rate-limit subject를 바꾸지 않는 테스트
 - 역할별 접근 테스트
 - 다른 사용자 IDOR 테스트
 - credential, token, email 원문이 로그에 남지 않음
+
+### 현재 구현
+
+- strict Pydantic Auth request/response와 공통 API 오류 형식
+- Argon2id password manager와 재사용 dummy verification hash
+- opaque session/CSRF token 생성 및 SHA-256 hash 저장
+- HMAC rate-limit subject와 PostgreSQL row lock 기반 실패 횟수 처리
+- local/production cookie 정책과 session revoke/expiry
+- Origin, CSRF, role, ownership 재사용 dependency/helper
+- Auth API 4개와 request ID 응답 header
+- 위조된 proxy header를 무시하는 직접 peer 주소 처리
+
+### 현재 검증
+
+| 검증 | 결과 |
+|---|---|
+| Phase 2 단위·API·권한 테스트 | 23 passed |
+| 전체 로컬 pytest | 46 passed, 20 skipped (로컬 PostgreSQL 미설정) |
+| Phase 2 PostgreSQL 통합 테스트 | 13 passed (GitHub Actions PostgreSQL 16) |
+| GitHub Actions 전체 backend 테스트 | 66 passed |
+| Ruff | 통과 |
+| Python dependency check | 통과 |
+| Frontend Vitest | 1 passed |
+| Frontend typecheck | 통과 |
+| Frontend production build | 통과 |
 
 ## 8. Phase 3 — 직원 Dashboard·Action·Evidence
 
@@ -334,6 +367,8 @@ Migration과 model registry는 여러 에이전트가 병렬로 수정하지 않
 
 ### Frontend
 
+- 최소 공통 로그인 화면과 인증 상태 초기화
+- 인증 성공 후 employee 기본 경로 이동과 미인증 사용자 로그인 경로 전환
 - 직원 dashboard
 - 핵심가치와 업무 표시
 - Action checklist와 진행률
@@ -492,6 +527,8 @@ active assignment → completed
 
 - Playwright Chromium 실제 browser run은 아직 수행하지 않았으며 Phase 6 전에 필수
 - Replit runtime과 실제 `PORT`, PostgreSQL URL 형식은 배포 단계에서 확인
+- 실제 직원 업무 resource의 IDOR는 Phase 3 API가 생길 때 현재 ownership helper 테스트에
+  더해 endpoint 수준으로 다시 검증해야 함
 
 ## 14. 문서 갱신 규칙
 
