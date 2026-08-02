@@ -27,6 +27,9 @@
 | D-018 | ERD에서 필수 관계로 정의된 FK는 표에 nullable 표시가 없더라도 `NOT NULL`로 구현하고 DATA_MODEL 표에 이를 명시한다. | 고아 세션·주차·Action·링크가 생성되는 것을 DB에서 차단한다. | DATA_MODEL |
 | D-019 | `onboarding_weeks`의 DB check는 계약에 명시된 `ends_on >= starts_on`을 사용하고, 정확한 7일 구간은 seed/service가 `ends_on = starts_on + 6일`로 보장한다. 커리큘럼의 주차별 stage는 DB check로도 보호한다. | 문서의 설명과 명시 제약을 모두 보존하면서 잘못된 공식 커리큘럼 입력을 조기에 차단한다. | DATA_MODEL |
 | D-020 | Phase 1 데모 계정·가치 코드/설명·Action·업무·stable key는 `DEMO_SCENARIO.md`의 허구 fixture 계약을 사용한다. 실제 공식 카탈로그나 임직원 데이터로 간주하지 않는다. | 비어 있던 fixture 입력을 재현 가능하게 고정하고 실제 정보의 임의 추론을 피한다. | DATA_MODEL, DEMO_SCENARIO |
+| D-021 | Replit의 전달 헤더와 trusted proxy IP 범위가 검증되기 전에는 `Forwarded`와 `X-Forwarded-*`를 신뢰하지 않는다. 로그인 제한에는 ASGI 연결의 직접 peer 주소만 사용하고, 운영 cookie와 Origin 판단은 각각 `APP_ENV`와 `APP_ORIGIN` 설정을 사용한다. | 문서화되지 않은 전달 헤더를 신뢰해 클라이언트 주소나 요청 scheme이 위조되는 것을 방지한다. | DATA_MODEL, API, DEVELOPMENT_PLAN, AGENTS, README |
+| D-022 | Phase 2는 인증 API와 서버 보안 기반을 구현하고, Phase 3의 첫 프론트엔드 작업으로 최소 공통 로그인 화면과 인증 초기화를 구현한다. | “직원 로그인부터 Evidence 제출까지”라는 Phase 3 완료 조건과 화면 구현 범위를 일치시킨다. | PRODUCT_SPEC, IMPLEMENTATION_ROADMAP |
+| D-023 | `SESSION_SECRET`은 UTF-8 기준 최소 32바이트의 배포별 무작위 secret으로 관리하고 저장소에 커밋하지 않는다. Phase 2의 8시간 session과 10분/5회/15분 rate-limit 값은 계약 고정값으로 검증한다. | 토큰 관련 HMAC key의 추측 가능성을 낮추고 환경 변수 오설정으로 보안 정책이 약화되는 것을 막는다. | API, DEVELOPMENT_PLAN, README |
 
 ## 구현 중 새 결정이 필요한 경우
 

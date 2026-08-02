@@ -96,6 +96,8 @@ Max-Age: 8시간
 
 Local HTTP 개발에서는 이름을 `ix_session`으로 사용하고 `Secure=false`로 설정한다.
 원본 token은 cookie에만 전달하고 DB에는 SHA-256 hash만 저장한다.
+`SESSION_SECRET`은 UTF-8 기준 최소 32바이트의 배포별 무작위 값을 사용하며 저장소에
+커밋하지 않는다. 8시간 session TTL은 MVP 계약 고정값이다.
 
 ### 2.2 CSRF
 
@@ -117,6 +119,19 @@ Local HTTP 개발에서는 이름을 `ix_session`으로 사용하고 `Secure=fal
 | 전체 데모 진행 현황 | X | X | O |
 
 역할이 맞지만 다른 사용자의 리소스에 접근하면 존재 여부를 숨기기 위해 404를 반환한다.
+
+### 2.4 Reverse proxy와 client address
+
+- Replit의 전달 헤더와 trusted proxy IP 범위를 검증하기 전에는 Uvicorn을
+  `--no-proxy-headers`로 실행한다.
+- 로그인 rate limit은 ASGI 연결의 직접 peer 주소를 사용한다. `Forwarded`,
+  `X-Forwarded-For` 등 요청 header 값을 직접 읽어 client address로 사용하지 않는다.
+- `FORWARDED_ALLOW_IPS=*` 또는 이와 동등한 wildcard proxy 신뢰 설정은 사용하지 않는다.
+- Production cookie의 `Secure` 여부는 `APP_ENV`, CSRF Origin 허용값은 `APP_ORIGIN`으로
+  결정하며 전달된 request scheme이나 host에서 추론하지 않는다.
+- Phase 6 배포 검증에서 전달 header 동작과 trusted proxy IP 범위를 확인한 후에만
+  결정 로그와 이 계약을 갱신하여 proxy header 처리를 활성화할 수 있다.
+- client address 원문과 전달 header 원문은 DB나 application log에 남기지 않는다.
 
 ## 3. Health API
 

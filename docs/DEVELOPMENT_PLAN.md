@@ -832,8 +832,14 @@ GET /ready
 - Pydantic 서버 입력 검증
 - SQLAlchemy 기반 DB 접근
 - API Key와 Secret을 Replit Secrets에 저장
+- `SESSION_SECRET`은 UTF-8 기준 최소 32바이트의 배포별 무작위 값으로 관리
 - 내부 오류와 스택 트레이스 비공개
 - 로그인 요청 횟수 제한
+- Replit trusted proxy 범위를 검증하기 전까지 전달 헤더를 신뢰하지 않고 Uvicorn을
+  `--no-proxy-headers`로 실행
+- 로그인 제한의 주소 입력은 ASGI 연결의 직접 peer 주소를 사용하며 이메일, 주소,
+  전달 헤더 원문은 저장하거나 로그에 기록하지 않음
+- Production cookie와 CSRF Origin은 전달 헤더가 아니라 `APP_ENV`와 `APP_ORIGIN`으로 결정
 - 실제 임직원 데이터 사용 금지
 - 다른 사용자의 ID를 이용한 접근 차단 테스트
 
@@ -842,6 +848,7 @@ GET /ready
 ```env
 DATABASE_URL=
 SESSION_SECRET=
+APP_ORIGIN=
 GROQ_API_KEY=
 GROQ_MODEL=
 AI_PROVIDER=groq
