@@ -42,7 +42,7 @@
 |---:|---|---|---|---|
 | 0 | Project Scaffold | `completed` | 문서 계약 확정 | `codex/project-scaffold`, PR #2 병합 |
 | 1 | PostgreSQL·Alembic·Demo Seed | `completed` | Phase 0 병합 | `codex/database-schema`, PR #4 병합 |
-| 2 | 인증·Session·CSRF·권한 | `in_progress` | Phase 1 | `codex/auth-security` |
+| 2 | 인증·Session·CSRF·권한 | `in_review` | Phase 1 | `codex/auth-security`, PR #5 |
 | 3 | 직원 Dashboard·Action·Evidence | `not_started` | Phase 2 | 예정 |
 | 4 | LLM·Mock·Evidence Card | `not_started` | Phase 3 | 예정 |
 | 5 | 팀장 피드백·Report·HR 조회 | `not_started` | Phase 4 | 예정 |
@@ -276,9 +276,10 @@ Migration과 model registry는 여러 에이전트가 병렬로 수정하지 않
 
 ## 7. Phase 2 — 인증·Session·CSRF·권한
 
-- 상태: `in_progress`
-- 권장 브랜치: `codex/auth-security`
+- 상태: `in_review`
+- 브랜치: `codex/auth-security`
 - 선행 조건: Phase 1
+- PR: [#5](https://github.com/sleimneer-cloud/AI-onboarding-website/pull/5)
 
 ### 구현 기능
 
@@ -329,8 +330,9 @@ Migration과 model registry는 여러 에이전트가 병렬로 수정하지 않
 | 검증 | 결과 |
 |---|---|
 | Phase 2 단위·API·권한 테스트 | 23 passed |
-| 전체 로컬 pytest (`not postgres`) | 46 passed |
-| Phase 2 PostgreSQL 테스트 수집 | 13개 확인, 로컬 DB 미설정으로 skip |
+| 전체 로컬 pytest | 46 passed, 20 skipped (로컬 PostgreSQL 미설정) |
+| Phase 2 PostgreSQL 통합 테스트 | 13 passed (GitHub Actions PostgreSQL 16) |
+| GitHub Actions 전체 backend 테스트 | 66 passed |
 | Ruff | 통과 |
 | Python dependency check | 통과 |
 | Frontend Vitest | 1 passed |
@@ -525,8 +527,6 @@ active assignment → completed
 
 - Playwright Chromium 실제 browser run은 아직 수행하지 않았으며 Phase 6 전에 필수
 - Replit runtime과 실제 `PORT`, PostgreSQL URL 형식은 배포 단계에서 확인
-- Phase 2 PostgreSQL 통합 테스트 13개는 로컬 disposable DB가 없어 수집만 확인함.
-  PostgreSQL 16 CI 또는 이름에 `test`가 포함된 DB에서 실제 실행해야 함
 - 실제 직원 업무 resource의 IDOR는 Phase 3 API가 생길 때 현재 ownership helper 테스트에
   더해 endpoint 수준으로 다시 검증해야 함
 
