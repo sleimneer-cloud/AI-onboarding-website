@@ -12,11 +12,16 @@ from app.main import create_app
 
 
 @pytest.fixture
-def auth_contract_app(tmp_path) -> FastAPI:
+def auth_contract_app(tmp_path, monkeypatch: pytest.MonkeyPatch) -> FastAPI:
+    monkeypatch.setenv(
+        "DATABASE_URL",
+        "postgresql+psycopg://ignored:ignored@127.0.0.1:1/ignored_test",
+    )
     settings = Settings(
         _env_file=None,
         app_env="test",
         app_origin="http://test",
+        database_url=None,
         session_secret="s" * 32,
         frontend_dist_dir=tmp_path / "dist",
     )
