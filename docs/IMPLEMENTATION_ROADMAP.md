@@ -43,7 +43,7 @@
 | 0 | Project Scaffold | `completed` | 문서 계약 확정 | `codex/project-scaffold`, PR #2 병합 |
 | 1 | PostgreSQL·Alembic·Demo Seed | `completed` | Phase 0 병합 | `codex/database-schema`, PR #4 병합 |
 | 2 | 인증·Session·CSRF·권한 | `completed` | Phase 1 | `codex/auth-security`, PR #5 병합 |
-| 3 | 직원 Dashboard·Action·Evidence | `in_progress` | Phase 2 | `codex/employee-weekly-loop` |
+| 3 | 직원 Dashboard·Action·Evidence | `in_review` | Phase 2 | `codex/employee-weekly-loop`, PR #6 |
 | 4 | LLM·Mock·Evidence Card | `not_started` | Phase 3 | 예정 |
 | 5 | 팀장 피드백·Report·HR 조회 | `not_started` | Phase 4 | 예정 |
 | 6 | OpenAPI·E2E·Replit 배포 | `not_started` | Phase 5 | 예정 |
@@ -345,9 +345,10 @@ Migration과 model registry는 여러 에이전트가 병렬로 수정하지 않
 
 ## 8. Phase 3 — 직원 Dashboard·Action·Evidence
 
-- 상태: `in_progress`
+- 상태: `in_review`
 - 브랜치: `codex/employee-weekly-loop`
 - 선행 조건: Phase 2
+- PR: [#6](https://github.com/sleimneer-cloud/AI-onboarding-website/pull/6) — draft
 
 ### 구현 기능
 
