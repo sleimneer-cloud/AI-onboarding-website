@@ -23,6 +23,15 @@ class Settings(BaseSettings):
     app_version: str = "0.1.0"
     database_url: SecretStr | None = None
     database_ready_timeout_seconds: float = Field(default=2.0, gt=0, le=10)
+    ai_provider: Literal["groq", "mock"] = "groq"
+    groq_api_key: SecretStr | None = None
+    groq_model: str = "openai/gpt-oss-20b"
+    ai_output_mode: Literal["strict_json_schema"] = "strict_json_schema"
+    ai_total_budget_seconds: Literal[8] = 8
+    ai_max_retries: Literal[1] = 1
+    ai_fallback_to_mock: bool = True
+    ai_prompt_version: Literal["v1"] = "v1"
+    ai_schema_version: Literal["1.0"] = "1.0"
     session_secret: SecretStr | None = None
     session_ttl_seconds: Literal[28800] = 28800
     login_rate_limit_window_seconds: Literal[600] = 600
@@ -45,6 +54,21 @@ class Settings(BaseSettings):
         if isinstance(value, str) and not value.strip():
             return None
         return value
+
+    @field_validator("groq_api_key", mode="before")
+    @classmethod
+    def blank_groq_api_key_is_unset(cls, value: object) -> object:
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
+
+    @field_validator("groq_model")
+    @classmethod
+    def validate_groq_model(cls, value: str) -> str:
+        candidate = value.strip()
+        if not candidate or len(candidate) > 100:
+            raise ValueError("GROQ_MODEL must contain 1 to 100 characters")
+        return candidate
 
     @field_validator("app_origin")
     @classmethod

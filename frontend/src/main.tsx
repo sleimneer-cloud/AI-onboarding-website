@@ -1,4 +1,5 @@
 import { createRoot } from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
 
 import App from "./App";
 import "./styles.css";
@@ -9,4 +10,8 @@ if (!root) {
   throw new Error("Root element was not found.");
 }
 
-createRoot(root).render(<App />);
+createRoot(root).render(
+  <BrowserRouter>
+    <App />
+  </BrowserRouter>,
+);

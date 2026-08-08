@@ -1,7 +1,7 @@
 # IX Value Loop 구현 로드맵
 
 - 문서 상태: 작업 진행 추적용
-- 최종 갱신일: 2026-08-08
+- 최종 갱신일: 2026-08-09
 - 대상: IX Value Loop MVP
 
 ## 1. 문서 역할
@@ -43,8 +43,8 @@
 | 0 | Project Scaffold | `completed` | 문서 계약 확정 | `codex/project-scaffold`, PR #2 병합 |
 | 1 | PostgreSQL·Alembic·Demo Seed | `completed` | Phase 0 병합 | `codex/database-schema`, PR #4 병합 |
 | 2 | 인증·Session·CSRF·권한 | `completed` | Phase 1 | `codex/auth-security`, PR #5 병합 |
-| 3 | 직원 Dashboard·Action·Evidence | `in_review` | Phase 2 | `codex/employee-weekly-loop`, PR #6 |
-| 4 | LLM·Mock·Evidence Card | `not_started` | Phase 3 | 예정 |
+| 3 | 직원 Dashboard·Action·Evidence | `completed` | Phase 2 | `codex/employee-weekly-loop`, PR #6 병합 |
+| 4 | LLM·Mock·Evidence Card | `in_progress` | Phase 3 | `codex/evidence-card` |
 | 5 | 팀장 피드백·Report·HR 조회 | `not_started` | Phase 4 | 예정 |
 | 6 | OpenAPI·E2E·Replit 배포 | `not_started` | Phase 5 | 예정 |
 
@@ -345,10 +345,10 @@ Migration과 model registry는 여러 에이전트가 병렬로 수정하지 않
 
 ## 8. Phase 3 — 직원 Dashboard·Action·Evidence
 
-- 상태: `in_review`
+- 상태: `completed`
 - 브랜치: `codex/employee-weekly-loop`
 - 선행 조건: Phase 2
-- PR: [#6](https://github.com/sleimneer-cloud/AI-onboarding-website/pull/6) — draft
+- PR: [#6](https://github.com/sleimneer-cloud/AI-onboarding-website/pull/6)
 
 ### 구현 기능
 
@@ -380,6 +380,15 @@ Migration과 model registry는 여러 에이전트가 병렬로 수정하지 않
 - Evidence form과 링크 입력
 - loading, empty, validation, conflict 상태
 
+### 확정된 후속 화면 구조
+
+- D-024에 따라 현재 `/employee` 단일 화면을 홈, 업무·Value Action, 행동 근거 route로 분리한다.
+- `/employee`는 요약과 상태 기반 CTA만 유지한다.
+- `/employee/assignment`에서 업무 상세, Action checklist와 진행률을 제공한다.
+- `/employee/evidence/new`에서 Evidence form과 링크 입력을 제공한다.
+- 이 route 분리는 기존 Phase 3 API 계약을 변경하지 않으며 Phase 4 Card UI 구현 전에 완료한다.
+- route 직접 진입, 새로고침, 브라우저 이동, 허용되지 않은 역할의 접근을 frontend test로 검증한다.
+
 ### 현재 구현
 
 - strict request/response schema와 employee service layer를 추가함
@@ -390,6 +399,8 @@ Migration과 model registry는 여러 에이전트가 병렬로 수정하지 않
 - API 요청은 cookie credential을 포함하고 mutation은 메모리 CSRF token을 사용함
 - 외부 링크는 제목·설명·URL만 저장하며 URL 본문은 가져오지 않음
 - Windows PostgreSQL 검증을 위해 pytest와 demo seed/reset의 async loop를 호환 방식으로 실행함
+- 현재 PR #6의 직원 UI는 `/employee` 한 화면에서 Dashboard·Action·Evidence form을 전환한다.
+- D-024의 독립 route 분리는 문서 확정 후 후속 frontend 변경으로 남아 있다.
 
 ### 현재 검증
 
@@ -424,23 +435,29 @@ Migration과 model registry는 여러 에이전트가 병렬로 수정하지 않
 - 다른 직원 resource 접근 차단
 - server와 UI 모두 계약에 없는 기능을 노출하지 않음
 
+### 병합 결과
+
+- PR #6이 `main`에 병합됨 (`8975361`)
+
 ## 9. Phase 4 — LLM·Mock·Evidence Card
 
-- 상태: `not_started`
-- 권장 브랜치: `codex/evidence-card`
+- 상태: `in_progress`
+- 브랜치: `codex/evidence-card`
 - 선행 조건: Phase 3
 
 ### 구현 순서
 
-1. `EvidenceCardGenerationInputV1` Pydantic model
-2. `CardContentV1` Pydantic model
-3. JSON Schema와 Pydantic validation 일치
-4. source reference 허용 목록 검증
-5. deterministic Mock provider
-6. Groq provider와 strict JSON Schema
-7. 전체 8초 deadline과 최대 1회 재시도
-8. Groq 실패 후 명확히 표시된 Mock fallback
-9. Card 생성·조회·편집·확정 service와 API
+1. 기존 직원 UI를 `/employee`, `/employee/assignment`, `/employee/evidence/new` route로 분리
+2. `EvidenceCardGenerationInputV1` Pydantic model
+3. `CardContentV1` Pydantic model
+4. JSON Schema와 Pydantic validation 일치
+5. source reference 허용 목록 검증
+6. deterministic Mock provider
+7. Groq provider와 strict JSON Schema
+8. 전체 8초 deadline과 최대 1회 재시도
+9. Groq 실패 후 명확히 표시된 Mock fallback
+10. Card 생성·조회·편집·확정 service와 API
+11. `/employee/cards/:card_id` Card 생성 상태·검토·수정·확정 화면
 
 ### 상태 전이
 
@@ -461,6 +478,38 @@ user_review → user_confirmed
 - 확정 이후 Card 수정과 재생성 차단
 - unknown field 거부
 
+### 현재 구현
+
+- React Router를 도입해 직원 홈, 업무·Value Action, Evidence, Card와 report 경로를 분리함
+- 직접 경로 진입과 서버 session 복원 후 역할별 경로 제한을 구현함
+- strict `EvidenceCardGenerationInputV1`, `CardContentV1`과 source reference 검증을 구현함
+- Evidence 선택 Action과 링크 제목·설명만 LLM 입력에 포함하고 외부 URL을 제외함
+- deterministic Mock과 Groq strict JSON Schema adapter를 구현함
+- Groq SDK 내부 재시도를 끄고 전체 8초 monotonic 예산 안에서 최대 1회 재시도함
+- timeout, 429, 네트워크·5xx, JSON/schema/source 오류 후 Mock fallback을 구현함
+- AI 호출 전 `ai_processing`을 commit하고 호출 완료 후 별도 transaction으로 결과를 저장함
+- Card 생성·조회·수정·확정 API와 optimistic version, 소유권, 상태 전이를 구현함
+- 최초 생성 JSON과 사용자 최종 JSON을 분리하고 확정 이후 변경을 차단함
+- Card 화면에서 실제 provider를 표시하고 text만 편집하며 source reference는 읽기 전용으로 표시함
+- `/employee/report`는 Phase 5 실제 리포트 전까지 팀장 검토 대기 안내만 제공함
+
+### 현재 검증
+
+| 검증 | 결과 |
+|---|---|
+| LLM schema·Mock·Groq adapter·fallback 집중 테스트 | 8 passed |
+| 실제 Groq network smoke (가상 데이터, `openai/gpt-oss-20b`) | schema `1.0` 검증 통과 |
+| Card API 계약 테스트 | 3 passed |
+| Phase 4 PostgreSQL 상태 전이·동시성 테스트 | 4 passed |
+| Backend 전체 pytest (PostgreSQL 16 포함) | 99 passed |
+| Backend Ruff | 통과 |
+| Python dependency check | 통과 |
+| Frontend Vitest | 7 passed |
+| Frontend typecheck | 통과 |
+| Frontend production build | 통과 |
+| Playwright test discovery | smoke test 1개 확인 |
+| pnpm frozen lockfile | 통과 |
+
 ### 완료 조건
 
 - 정상 Groq와 deterministic Mock 결과가 동일 schema 검증 통과
@@ -469,6 +518,7 @@ user_review → user_confirmed
 - 동시 Card 생성 요청에서 하나의 Card만 생성
 - 사용자 편집 version 충돌과 확정 이후 변경 차단
 - UI에 실제 provider가 명확히 표시됨
+- 홈에서 상태 기반 CTA로 각 직원 route에 진입하고 새로고침 후에도 같은 단계를 복원
 
 ## 10. Phase 5 — 팀장 피드백·Report·HR 조회
 
@@ -485,6 +535,7 @@ user_review → user_confirmed
 - 중복 feedback 제출 멱등 처리
 - `manager_reviewed` Card만 직원 가치별 report에 포함
 - HR 핵심가치·커리큘럼·Action Library·overview 읽기 전용 조회
+- 직원 `/employee/report` 가치별 누적 리포트 화면과 홈의 `가치 리포트 보기` CTA
 
 ### 상태 전이
 
@@ -569,6 +620,8 @@ active assignment → completed
 - Replit runtime과 실제 `PORT`, PostgreSQL URL 형식은 배포 단계에서 확인
 - 전체 직원 browser 흐름은 수동 회귀 검증으로 통과했으며 자동 Playwright 회귀 시나리오는
   Phase 6에서 추가
+- 실제 `GROQ_API_KEY`를 사용한 로컬 Groq network smoke는 가상 데이터로 통과함.
+  Phase 6에서는 Replit secret과 배포 네트워크 환경에서 같은 smoke를 다시 확인
 
 ## 14. 문서 갱신 규칙
 

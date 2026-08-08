@@ -946,6 +946,163 @@ textarea:disabled {
   font-size: 0.76rem;
 }
 
+.page-back {
+  margin: 8px 0 18px;
+  padding-inline: 0;
+}
+
+.home-next-step {
+  margin-top: 28px;
+}
+
+.standalone-state {
+  min-height: 320px;
+  margin-top: 34px;
+}
+
+.standalone-state .button {
+  margin-top: 18px;
+}
+
+.card-review-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 28px;
+  padding: clamp(28px, 5vw, 52px);
+  border-radius: 28px;
+  background: #142019;
+  color: #f6fff2;
+}
+
+.card-review-header h1 {
+  max-width: 720px;
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 3.7rem);
+  letter-spacing: -0.06em;
+  line-height: 1.02;
+}
+
+.card-review-header p:last-child {
+  margin: 18px 0 0;
+  color: #c9d5cc;
+}
+
+.provider-pill {
+  flex: 0 0 auto;
+  padding: 10px 14px;
+  border: 1px solid rgb(189 255 113 / 35%);
+  border-radius: 999px;
+  background: rgb(189 255 113 / 12%);
+  color: #bdff71;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.provider-pill.is-mock {
+  border-color: #ffd9a8;
+  background: #493a20;
+  color: #ffd9a8;
+}
+
+.card-editor {
+  display: grid;
+  gap: 16px;
+  margin: 24px 0 80px;
+}
+
+.card-section {
+  padding: clamp(22px, 4vw, 34px);
+  border: 1px solid #dce5da;
+  border-radius: 22px;
+  background: rgb(255 255 255 / 92%);
+  box-shadow: 0 16px 44px rgb(50 69 56 / 6%);
+}
+
+.card-section > h2 {
+  margin: 0 0 18px;
+}
+
+.card-text-field {
+  display: grid;
+  gap: 11px;
+  margin-top: 16px;
+}
+
+.card-text-field:first-child {
+  margin-top: 0;
+}
+
+.card-text-field > strong {
+  color: #344238;
+  font-size: 0.88rem;
+}
+
+.card-text-field textarea {
+  width: 100%;
+  min-height: 112px;
+  padding: 15px 16px;
+  border: 1px solid #cfdacf;
+  border-radius: 12px;
+  background: #fbfdfa;
+  color: #1e2a22;
+  resize: vertical;
+  line-height: 1.65;
+}
+
+.card-text-field > p {
+  margin: 0;
+  color: #435047;
+  line-height: 1.75;
+}
+
+.source-ref-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.source-ref-list code {
+  padding: 5px 8px;
+  border-radius: 7px;
+  background: #edf3e9;
+  color: #547043;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.68rem;
+}
+
+.grounding-warnings {
+  padding: 18px 20px;
+  border: 1px solid #ecd3a8;
+  border-radius: 16px;
+  background: #fff9ed;
+  color: #70522d;
+}
+
+.grounding-warnings p {
+  margin: 8px 0 0;
+}
+
+.card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  position: sticky;
+  bottom: 14px;
+  padding: 16px;
+  border: 1px solid #d9e1d7;
+  border-radius: 18px;
+  background: rgb(248 251 247 / 94%);
+  box-shadow: 0 18px 48px rgb(37 54 43 / 14%);
+  backdrop-filter: blur(12px);
+}
+
+.confirmation-note {
+  color: #416b31;
+  font-weight: 800;
+}
+
 @media (max-width: 960px) {
   .login-layout {
     grid-template-columns: 1fr;
@@ -1131,5 +1288,15 @@ textarea:disabled {
     position: absolute;
     top: 8px;
     right: 8px;
+  }
+
+  .card-review-header,
+  .card-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .provider-pill {
+    align-self: flex-start;
   }
 }

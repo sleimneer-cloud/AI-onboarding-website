@@ -1,5 +1,6 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { BrowserRouter } from "react-router-dom";
 
 import App from "./App";
 import type { EmployeeDashboard } from "./api";
@@ -13,6 +14,8 @@ const employee = {
 
 const actionId = "00000000-0000-4000-8000-000000000101";
 const assignmentId = "00000000-0000-4000-8000-000000000201";
+const evidenceId = "00000000-0000-4000-8000-000000000501";
+const cardId = "00000000-0000-4000-8000-000000000601";
 
 function dashboard(overrides: Partial<EmployeeDashboard> = {}): EmployeeDashboard {
   return {
@@ -83,6 +86,59 @@ function authError() {
   );
 }
 
+function cardResponse(overrides: Record<string, unknown> = {}) {
+  return {
+    id: cardId,
+    evidence_id: evidenceId,
+    status: "user_review",
+    content: {
+      schema_version: "1.0",
+      key_actions: [
+        { text: "담당자를 인터뷰했습니다.", source_refs: ["evidence.performed_action"] },
+      ],
+      value_connection: {
+        text: "공식 가치 정의와 기록한 행동을 함께 확인했습니다.",
+        source_refs: ["core_value.definition", "evidence.performed_action"],
+      },
+      evidence_summary: {
+        text: "인터뷰 기록을 근거로 사용했습니다.",
+        source_refs: ["evidence.performed_action"],
+      },
+      discovery: { text: "문의 경로가 분산되어 있었습니다.", source_refs: ["evidence.discovery"] },
+      judgment_change: {
+        text: "단일 문의 진입점을 우선하기로 했습니다.",
+        source_refs: ["evidence.changed_judgment"],
+      },
+      work_impact: { text: "프로토타입 범위를 줄였습니다.", source_refs: ["evidence.work_impact"] },
+      next_action: {
+        text: "다음에도 사용자 흐름을 먼저 확인합니다.",
+        source_refs: ["evidence.next_action"],
+      },
+      grounding_warnings: [],
+    },
+    generation: {
+      provider: "mock",
+      model_name: null,
+      prompt_version: "v1",
+      schema_version: "1.0",
+      latency_ms: 2,
+    },
+    version: 1,
+    confirmed_at: null,
+    manager_reviewed_at: null,
+    permissions: { can_edit: true, can_confirm: true, can_retry: false },
+    ...overrides,
+  };
+}
+
+function renderApp() {
+  return render(
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>,
+  );
+}
+
 beforeEach(() => {
   window.history.replaceState({}, "", "/");
 });
@@ -96,7 +152,7 @@ describe("IX Value Loop employee flow", () => {
   it("shows the login form when no server session exists", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(authError()));
 
-    render(<App />);
+    renderApp();
 
     expect(await screen.findByRole("heading", { name: "IX Value Loop" })).toBeVisible();
     expect(screen.getByLabelText("이메일")).toHaveValue("employee@ix-demo.test");
@@ -118,7 +174,7 @@ describe("IX Value Loop employee flow", () => {
       .mockResolvedValueOnce(jsonResponse(dashboard()));
     vi.stubGlobal("fetch", fetchMock);
 
-    render(<App />);
+    renderApp();
 
     fireEvent.change(await screen.findByLabelText("비밀번호"), {
       target: { value: "DemoPassword!" },
@@ -162,16 +218,23 @@ describe("IX Value Loop employee flow", () => {
       .mockResolvedValueOnce(jsonResponse(completedDashboard));
     vi.stubGlobal("fetch", fetchMock);
 
-    render(<App />);
+    renderApp();
 
     expect(await screen.findByRole("heading", { name: "강박적 호기심" })).toBeVisible();
     expect(screen.getByText("0%")).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "이번 주 업무 시작하기" }));
 
     fireEvent.click(
       screen.getByLabelText("처음 가설과 조사 후 판단이 어떻게 달라졌는지 기록한다. 완료"),
     );
 
-    expect(await screen.findByText("100%")).toBeVisible();
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText(
+          "처음 가설과 조사 후 판단이 어떻게 달라졌는지 기록한다. 완료",
+        ),
+      ).toBeChecked(),
+    );
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(5));
     const updateRequest = fetchMock.mock.calls[3];
     expect(updateRequest[0]).toBe(`/api/v1/assigned-actions/${actionId}`);
@@ -192,15 +255,6 @@ describe("IX Value Loop employee flow", () => {
       progress: { completed_actions: 1, total_actions: 1, percentage: 100 },
       permissions: { can_update_actions: true, can_submit_evidence: true },
     });
-    const submittedDashboard = dashboard({
-      ...readyDashboard,
-      onboarding: { ...readyDashboard.onboarding, week_status: "evidence_submitted" },
-      evidence: {
-        id: "00000000-0000-4000-8000-000000000501",
-        submitted_at: "2026-08-02T05:00:00Z",
-      },
-      permissions: { can_update_actions: false, can_submit_evidence: false },
-    });
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(jsonResponse(employee))
@@ -209,7 +263,7 @@ describe("IX Value Loop employee flow", () => {
       .mockResolvedValueOnce(
         jsonResponse(
           {
-            id: "00000000-0000-4000-8000-000000000501",
+            id: evidenceId,
             assignment_id: assignmentId,
             assigned_action_ids: [actionId],
             performed_action: "담당자 인터뷰를 진행하고 흐름을 정리했습니다.",
@@ -223,12 +277,13 @@ describe("IX Value Loop employee flow", () => {
           201,
         ),
       )
-      .mockResolvedValueOnce(jsonResponse(submittedDashboard));
+      .mockResolvedValueOnce(jsonResponse(cardResponse(), 201))
+      .mockResolvedValueOnce(jsonResponse(cardResponse()));
     vi.stubGlobal("fetch", fetchMock);
 
-    render(<App />);
+    renderApp();
 
-    fireEvent.click(await screen.findByRole("button", { name: "행동 근거 등록" }));
+    fireEvent.click(await screen.findByRole("button", { name: "행동 근거 작성하기" }));
     const inputText = "담당자 인터뷰를 진행하고 실제 업무 흐름을 확인했습니다.";
     fireEvent.change(screen.getByLabelText(/실제로 수행한 행동/), {
       target: { value: inputText },
@@ -247,11 +302,84 @@ describe("IX Value Loop employee flow", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "행동 근거 제출" }));
 
-    expect(await screen.findByRole("heading", { name: "행동 근거를 제출했습니다" })).toBeVisible();
+    expect(await screen.findByRole("heading", { name: "근거로 정리된 이번 주의 행동" })).toBeVisible();
+    expect(window.location.pathname).toBe(`/employee/cards/${cardId}`);
     const createRequest = fetchMock.mock.calls[3];
     expect(createRequest[0]).toBe("/api/v1/evidence");
     const requestBody = JSON.parse((createRequest[1] as RequestInit).body as string);
     expect(requestBody.assigned_action_ids).toEqual([actionId]);
     expect(requestBody.performed_action).toBe(inputText);
+    expect(fetchMock.mock.calls[4][0]).toBe(`/api/v1/evidence/${evidenceId}/card`);
+  });
+
+  it("restores a direct employee assignment route without redirecting home", async () => {
+    window.history.replaceState({}, "", "/employee/assignment");
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(employee))
+      .mockResolvedValueOnce(jsonResponse({ csrf_token: "csrf-token" }))
+      .mockResolvedValueOnce(jsonResponse(dashboard()));
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderApp();
+
+    expect(await screen.findByRole("heading", { name: "가치를 행동으로 옮겨보세요" })).toBeVisible();
+    expect(window.location.pathname).toBe("/employee/assignment");
+  });
+
+  it("redirects an authenticated manager away from employee routes", async () => {
+    window.history.replaceState({}, "", "/employee/assignment");
+    const manager = { ...employee, role: "manager" as const, name: "박도윤" };
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(manager))
+      .mockResolvedValueOnce(jsonResponse({ csrf_token: "csrf-token" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderApp();
+
+    expect(await screen.findByRole("heading", { name: "팀장 검토 화면" })).toBeVisible();
+    expect(window.location.pathname).toBe("/manager");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("edits and confirms an Evidence Card while keeping source references read-only", async () => {
+    window.history.replaceState({}, "", `/employee/cards/${cardId}`);
+    const initialCard = cardResponse();
+    const editedContent = structuredClone(initialCard.content as Record<string, unknown>) as {
+      next_action: { text: string; source_refs: string[] };
+    } & Record<string, unknown>;
+    editedContent.next_action.text = "다음 업무에서는 사용자 흐름을 먼저 문서로 정리합니다.";
+    const updatedCard = cardResponse({ content: editedContent, version: 2 });
+    const confirmedCard = cardResponse({
+      content: editedContent,
+      version: 3,
+      status: "user_confirmed",
+      confirmed_at: "2026-08-02T06:00:00Z",
+      permissions: { can_edit: false, can_confirm: false, can_retry: false },
+    });
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(employee))
+      .mockResolvedValueOnce(jsonResponse({ csrf_token: "csrf-token" }))
+      .mockResolvedValueOnce(jsonResponse(dashboard()))
+      .mockResolvedValueOnce(jsonResponse(initialCard))
+      .mockResolvedValueOnce(jsonResponse(updatedCard))
+      .mockResolvedValueOnce(jsonResponse(confirmedCard));
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderApp();
+
+    expect(await screen.findByText("데모 대체 생성 · deterministic Mock")).toBeVisible();
+    expect(screen.getByText("evidence.next_action")).toBeVisible();
+    const nextAction = screen.getByDisplayValue("다음에도 사용자 흐름을 먼저 확인합니다.");
+    fireEvent.change(nextAction, { target: { value: editedContent.next_action.text } });
+    fireEvent.click(screen.getByRole("button", { name: "Evidence Card 확정" }));
+
+    expect(await screen.findByText(/확정 완료/)).toBeVisible();
+    expect(fetchMock.mock.calls[4][0]).toBe(`/api/v1/evidence-cards/${cardId}`);
+    expect(fetchMock.mock.calls[5][0]).toBe(`/api/v1/evidence-cards/${cardId}/confirm`);
+    const updatePayload = JSON.parse((fetchMock.mock.calls[4][1] as RequestInit).body as string);
+    expect(updatePayload.content.next_action.source_refs).toEqual(["evidence.next_action"]);
   });
 });
