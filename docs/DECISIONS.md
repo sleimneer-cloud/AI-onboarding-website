@@ -30,6 +30,7 @@
 | D-021 | Replit의 전달 헤더와 trusted proxy IP 범위가 검증되기 전에는 `Forwarded`와 `X-Forwarded-*`를 신뢰하지 않는다. 로그인 제한에는 ASGI 연결의 직접 peer 주소만 사용하고, 운영 cookie와 Origin 판단은 각각 `APP_ENV`와 `APP_ORIGIN` 설정을 사용한다. | 문서화되지 않은 전달 헤더를 신뢰해 클라이언트 주소나 요청 scheme이 위조되는 것을 방지한다. | DATA_MODEL, API, DEVELOPMENT_PLAN, AGENTS, README |
 | D-022 | Phase 2는 인증 API와 서버 보안 기반을 구현하고, Phase 3의 첫 프론트엔드 작업으로 최소 공통 로그인 화면과 인증 초기화를 구현한다. | “직원 로그인부터 Evidence 제출까지”라는 Phase 3 완료 조건과 화면 구현 범위를 일치시킨다. | PRODUCT_SPEC, IMPLEMENTATION_ROADMAP |
 | D-023 | `SESSION_SECRET`은 UTF-8 기준 최소 32바이트의 배포별 무작위 secret으로 관리하고 저장소에 커밋하지 않는다. Phase 2의 8시간 session과 10분/5회/15분 rate-limit 값은 계약 고정값으로 검증한다. | 토큰 관련 HMAC key의 추측 가능성을 낮추고 환경 변수 오설정으로 보안 정책이 약화되는 것을 막는다. | API, DEVELOPMENT_PLAN, README |
+| D-024 | 직원 흐름은 `/employee` 홈, `/employee/assignment` 업무·Value Action, `/employee/evidence/new` 행동 근거 작성, `/employee/cards/:card_id` Evidence Card, `/employee/report` 누적 리포트의 독립 client route로 구분한다. 홈은 요약과 상태 기반 CTA만 제공하며 상세 작업은 버튼으로 해당 route에 진입한다. | 한 화면의 과도한 정보 밀도를 줄이고 사용자가 현재 단계와 다음 행동을 명확히 이해하게 한다. | PRODUCT_SPEC, DEVELOPMENT_PLAN, IMPLEMENTATION_ROADMAP |
 
 ## 구현 중 새 결정이 필요한 경우
 

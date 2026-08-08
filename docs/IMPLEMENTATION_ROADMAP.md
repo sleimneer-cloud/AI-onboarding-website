@@ -380,6 +380,15 @@ Migration과 model registry는 여러 에이전트가 병렬로 수정하지 않
 - Evidence form과 링크 입력
 - loading, empty, validation, conflict 상태
 
+### 확정된 후속 화면 구조
+
+- D-024에 따라 현재 `/employee` 단일 화면을 홈, 업무·Value Action, 행동 근거 route로 분리한다.
+- `/employee`는 요약과 상태 기반 CTA만 유지한다.
+- `/employee/assignment`에서 업무 상세, Action checklist와 진행률을 제공한다.
+- `/employee/evidence/new`에서 Evidence form과 링크 입력을 제공한다.
+- 이 route 분리는 기존 Phase 3 API 계약을 변경하지 않으며 Phase 4 Card UI 구현 전에 완료한다.
+- route 직접 진입, 새로고침, 브라우저 이동, 허용되지 않은 역할의 접근을 frontend test로 검증한다.
+
 ### 현재 구현
 
 - strict request/response schema와 employee service layer를 추가함
@@ -390,6 +399,8 @@ Migration과 model registry는 여러 에이전트가 병렬로 수정하지 않
 - API 요청은 cookie credential을 포함하고 mutation은 메모리 CSRF token을 사용함
 - 외부 링크는 제목·설명·URL만 저장하며 URL 본문은 가져오지 않음
 - Windows PostgreSQL 검증을 위해 pytest와 demo seed/reset의 async loop를 호환 방식으로 실행함
+- 현재 PR #6의 직원 UI는 `/employee` 한 화면에서 Dashboard·Action·Evidence form을 전환한다.
+- D-024의 독립 route 분리는 문서 확정 후 후속 frontend 변경으로 남아 있다.
 
 ### 현재 검증
 
@@ -432,15 +443,17 @@ Migration과 model registry는 여러 에이전트가 병렬로 수정하지 않
 
 ### 구현 순서
 
-1. `EvidenceCardGenerationInputV1` Pydantic model
-2. `CardContentV1` Pydantic model
-3. JSON Schema와 Pydantic validation 일치
-4. source reference 허용 목록 검증
-5. deterministic Mock provider
-6. Groq provider와 strict JSON Schema
-7. 전체 8초 deadline과 최대 1회 재시도
-8. Groq 실패 후 명확히 표시된 Mock fallback
-9. Card 생성·조회·편집·확정 service와 API
+1. 기존 직원 UI를 `/employee`, `/employee/assignment`, `/employee/evidence/new` route로 분리
+2. `EvidenceCardGenerationInputV1` Pydantic model
+3. `CardContentV1` Pydantic model
+4. JSON Schema와 Pydantic validation 일치
+5. source reference 허용 목록 검증
+6. deterministic Mock provider
+7. Groq provider와 strict JSON Schema
+8. 전체 8초 deadline과 최대 1회 재시도
+9. Groq 실패 후 명확히 표시된 Mock fallback
+10. Card 생성·조회·편집·확정 service와 API
+11. `/employee/cards/:card_id` Card 생성 상태·검토·수정·확정 화면
 
 ### 상태 전이
 
@@ -469,6 +482,7 @@ user_review → user_confirmed
 - 동시 Card 생성 요청에서 하나의 Card만 생성
 - 사용자 편집 version 충돌과 확정 이후 변경 차단
 - UI에 실제 provider가 명확히 표시됨
+- 홈에서 상태 기반 CTA로 각 직원 route에 진입하고 새로고침 후에도 같은 단계를 복원
 
 ## 10. Phase 5 — 팀장 피드백·Report·HR 조회
 
@@ -485,6 +499,7 @@ user_review → user_confirmed
 - 중복 feedback 제출 멱등 처리
 - `manager_reviewed` Card만 직원 가치별 report에 포함
 - HR 핵심가치·커리큘럼·Action Library·overview 읽기 전용 조회
+- 직원 `/employee/report` 가치별 누적 리포트 화면과 홈의 `가치 리포트 보기` CTA
 
 ### 상태 전이
 
