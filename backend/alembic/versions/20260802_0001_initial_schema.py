@@ -167,7 +167,8 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.CheckConstraint(
-            "display_order BETWEEN 1 AND 12", name="ck_core_values_display_order_range"
+            "display_order BETWEEN 1 AND 12",
+            name=op.f("ck_core_values_display_order_range"),
         ),
         sa.PrimaryKeyConstraint("id", name="pk_core_values"),
         sa.UniqueConstraint("code", name="uq_core_values_code"),
@@ -197,7 +198,7 @@ def upgrade() -> None:
         ),
         sa.CheckConstraint(
             "demo_week_override IS NULL OR demo_week_override BETWEEN 1 AND 12",
-            name="ck_onboarding_profiles_demo_week_override_range",
+            name=op.f("ck_onboarding_profiles_demo_week_override_range"),
         ),
         sa.ForeignKeyConstraint(
             ["manager_id"],
@@ -237,13 +238,14 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.CheckConstraint(
-            "week_number BETWEEN 1 AND 12", name="ck_curriculum_weeks_week_number_range"
+            "week_number BETWEEN 1 AND 12",
+            name=op.f("ck_curriculum_weeks_week_number_range"),
         ),
         sa.CheckConstraint(
             "(week_number BETWEEN 1 AND 4 AND stage = 'guided') OR "
             "(week_number BETWEEN 5 AND 8 AND stage = 'assisted') OR "
             "(week_number BETWEEN 9 AND 12 AND stage = 'autonomous')",
-            name="ck_curriculum_weeks_week_number_stage_match",
+            name=op.f("ck_curriculum_weeks_week_number_stage_match"),
         ),
         sa.ForeignKeyConstraint(
             ["core_value_id"],
@@ -273,10 +275,12 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.CheckConstraint(
-            "ends_on >= starts_on", name="ck_onboarding_weeks_valid_date_range"
+            "ends_on >= starts_on",
+            name=op.f("ck_onboarding_weeks_valid_date_range"),
         ),
         sa.CheckConstraint(
-            "week_number BETWEEN 1 AND 12", name="ck_onboarding_weeks_week_number_range"
+            "week_number BETWEEN 1 AND 12",
+            name=op.f("ck_onboarding_weeks_week_number_range"),
         ),
         sa.ForeignKeyConstraint(
             ["core_value_id"],
@@ -342,7 +346,7 @@ def upgrade() -> None:
         ),
         sa.CheckConstraint(
             "char_length(description) <= 2000",
-            name="ck_work_assignments_description_max_length",
+            name=op.f("ck_work_assignments_description_max_length"),
         ),
         sa.ForeignKeyConstraint(
             ["employee_id"],
@@ -406,16 +410,16 @@ def upgrade() -> None:
         ),
         sa.CheckConstraint(
             "char_length(action_text) <= 1000",
-            name="ck_action_library_action_text_max_length",
+            name=op.f("ck_action_library_action_text_max_length"),
         ),
         sa.CheckConstraint(
             "char_length(completion_criteria) <= 1000",
-            name="ck_action_library_completion_criteria_max_length",
+            name=op.f("ck_action_library_completion_criteria_max_length"),
         ),
         sa.CheckConstraint(
             "jsonb_typeof(recommended_evidence) = 'array' "
             "AND jsonb_array_length(recommended_evidence) <= 5",
-            name="ck_action_library_recommended_evidence_array",
+            name=op.f("ck_action_library_recommended_evidence_array"),
         ),
         sa.ForeignKeyConstraint(
             ["core_value_id"],
@@ -465,30 +469,33 @@ def upgrade() -> None:
         ),
         sa.CheckConstraint(
             "char_length(action_text_snapshot) <= 1000",
-            name="ck_assigned_actions_action_text_max_length",
+            name=op.f("ck_assigned_actions_action_text_max_length"),
         ),
         sa.CheckConstraint(
             "char_length(completion_criteria_snapshot) <= 1000",
-            name="ck_assigned_actions_completion_criteria_max_length",
+            name=op.f("ck_assigned_actions_completion_criteria_max_length"),
         ),
         sa.CheckConstraint(
             "source_kind <> 'custom' OR created_by_user_id IS NOT NULL",
-            name="ck_assigned_actions_custom_creator_required",
+            name=op.f("ck_assigned_actions_custom_creator_required"),
         ),
         sa.CheckConstraint(
             "source_kind <> 'library' OR source_action_id IS NOT NULL",
-            name="ck_assigned_actions_library_source_required",
+            name=op.f("ck_assigned_actions_library_source_required"),
         ),
         sa.CheckConstraint(
             "jsonb_typeof(recommended_evidence_snapshot) = 'array'",
-            name="ck_assigned_actions_recommended_evidence_array",
+            name=op.f("ck_assigned_actions_recommended_evidence_array"),
         ),
         sa.CheckConstraint(
             "(status = 'completed' AND completed_at IS NOT NULL) OR "
             "(status = 'pending' AND completed_at IS NULL)",
-            name="ck_assigned_actions_status_completed_at_match",
+            name=op.f("ck_assigned_actions_status_completed_at_match"),
         ),
-        sa.CheckConstraint("version >= 1", name="ck_assigned_actions_version_positive"),
+        sa.CheckConstraint(
+            "version >= 1",
+            name=op.f("ck_assigned_actions_version_positive"),
+        ),
         sa.ForeignKeyConstraint(
             ["assignment_id"],
             ["work_assignments.id"],
@@ -553,23 +560,23 @@ def upgrade() -> None:
         ),
         sa.CheckConstraint(
             "char_length(changed_judgment) BETWEEN 10 AND 2000",
-            name="ck_evidence_submissions_changed_judgment_length",
+            name=op.f("ck_evidence_submissions_changed_judgment_length"),
         ),
         sa.CheckConstraint(
             "char_length(discovery) BETWEEN 10 AND 2000",
-            name="ck_evidence_submissions_discovery_length",
+            name=op.f("ck_evidence_submissions_discovery_length"),
         ),
         sa.CheckConstraint(
             "char_length(next_action) BETWEEN 10 AND 1000",
-            name="ck_evidence_submissions_next_action_length",
+            name=op.f("ck_evidence_submissions_next_action_length"),
         ),
         sa.CheckConstraint(
             "char_length(performed_action) BETWEEN 10 AND 2000",
-            name="ck_evidence_submissions_performed_action_length",
+            name=op.f("ck_evidence_submissions_performed_action_length"),
         ),
         sa.CheckConstraint(
             "char_length(work_impact) BETWEEN 10 AND 2000",
-            name="ck_evidence_submissions_work_impact_length",
+            name=op.f("ck_evidence_submissions_work_impact_length"),
         ),
         sa.ForeignKeyConstraint(
             ["assignment_id"],
@@ -674,13 +681,16 @@ def upgrade() -> None:
         ),
         sa.CheckConstraint(
             "generation_attempts >= 0",
-            name="ck_evidence_cards_generation_attempts_nonnegative",
+            name=op.f("ck_evidence_cards_generation_attempts_nonnegative"),
         ),
         sa.CheckConstraint(
             "generation_latency_ms IS NULL OR generation_latency_ms >= 0",
-            name="ck_evidence_cards_generation_latency_nonnegative",
+            name=op.f("ck_evidence_cards_generation_latency_nonnegative"),
         ),
-        sa.CheckConstraint("version >= 1", name="ck_evidence_cards_version_positive"),
+        sa.CheckConstraint(
+            "version >= 1",
+            name=op.f("ck_evidence_cards_version_positive"),
+        ),
         sa.ForeignKeyConstraint(
             ["evidence_id"],
             ["evidence_submissions.id"],
@@ -712,19 +722,19 @@ def upgrade() -> None:
         ),
         sa.CheckConstraint(
             "char_length(next_action) BETWEEN 10 AND 1000",
-            name="ck_manager_feedbacks_next_action_length",
+            name=op.f("ck_manager_feedbacks_next_action_length"),
         ),
         sa.CheckConstraint(
             "char_length(observed_behavior) BETWEEN 10 AND 1000",
-            name="ck_manager_feedbacks_observed_behavior_length",
+            name=op.f("ck_manager_feedbacks_observed_behavior_length"),
         ),
         sa.CheckConstraint(
             "char_length(positive_feedback) BETWEEN 10 AND 1000",
-            name="ck_manager_feedbacks_positive_feedback_length",
+            name=op.f("ck_manager_feedbacks_positive_feedback_length"),
         ),
         sa.CheckConstraint(
             "char_length(work_impact) BETWEEN 10 AND 1000",
-            name="ck_manager_feedbacks_work_impact_length",
+            name=op.f("ck_manager_feedbacks_work_impact_length"),
         ),
         sa.ForeignKeyConstraint(
             ["evidence_card_id"],

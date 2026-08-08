@@ -314,6 +314,22 @@ Response 200:
 assignment가 없는 경우 `assignment=null`, `actions=[]`, progress는 모두 0으로 반환하고
 `week_status=not_configured`를 사용한다.
 
+Evidence와 Card가 존재하면 dashboard에는 본문 전체를 중복해서 넣지 않고 다음 요약만
+포함한다. 상세 Evidence는 `GET /api/v1/evidence/{evidence_id}`로 조회한다.
+
+```json
+{
+  "evidence": {
+    "id": "dd106a8a-d601-4d32-9bf0-abff8caf7a18",
+    "submitted_at": "2026-07-31T04:20:00Z"
+  },
+  "evidence_card": {
+    "id": "17229a4b-a5da-443f-8990-ce6a7e3724af",
+    "status": "user_review"
+  }
+}
+```
+
 ### `PATCH /api/v1/assigned-actions/{action_id}`
 
 employee 인증 및 CSRF 필요.

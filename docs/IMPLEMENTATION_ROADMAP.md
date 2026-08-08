@@ -1,7 +1,7 @@
 # IX Value Loop 구현 로드맵
 
 - 문서 상태: 작업 진행 추적용
-- 최종 갱신일: 2026-08-02
+- 최종 갱신일: 2026-08-08
 - 대상: IX Value Loop MVP
 
 ## 1. 문서 역할
@@ -42,8 +42,8 @@
 |---:|---|---|---|---|
 | 0 | Project Scaffold | `completed` | 문서 계약 확정 | `codex/project-scaffold`, PR #2 병합 |
 | 1 | PostgreSQL·Alembic·Demo Seed | `completed` | Phase 0 병합 | `codex/database-schema`, PR #4 병합 |
-| 2 | 인증·Session·CSRF·권한 | `in_review` | Phase 1 | `codex/auth-security`, PR #5 |
-| 3 | 직원 Dashboard·Action·Evidence | `not_started` | Phase 2 | 예정 |
+| 2 | 인증·Session·CSRF·권한 | `completed` | Phase 1 | `codex/auth-security`, PR #5 병합 |
+| 3 | 직원 Dashboard·Action·Evidence | `in_review` | Phase 2 | `codex/employee-weekly-loop`, PR #6 |
 | 4 | LLM·Mock·Evidence Card | `not_started` | Phase 3 | 예정 |
 | 5 | 팀장 피드백·Report·HR 조회 | `not_started` | Phase 4 | 예정 |
 | 6 | OpenAPI·E2E·Replit 배포 | `not_started` | Phase 5 | 예정 |
@@ -276,7 +276,7 @@ Migration과 model registry는 여러 에이전트가 병렬로 수정하지 않
 
 ## 7. Phase 2 — 인증·Session·CSRF·권한
 
-- 상태: `in_review`
+- 상태: `completed`
 - 브랜치: `codex/auth-security`
 - 선행 조건: Phase 1
 - PR: [#5](https://github.com/sleimneer-cloud/AI-onboarding-website/pull/5)
@@ -339,11 +339,16 @@ Migration과 model registry는 여러 에이전트가 병렬로 수정하지 않
 | Frontend typecheck | 통과 |
 | Frontend production build | 통과 |
 
+### 병합 결과
+
+- PR #5가 `main`에 병합됨 (`b872dec`)
+
 ## 8. Phase 3 — 직원 Dashboard·Action·Evidence
 
-- 상태: `not_started`
-- 권장 브랜치: `codex/employee-weekly-loop`
+- 상태: `in_review`
+- 브랜치: `codex/employee-weekly-loop`
 - 선행 조건: Phase 2
+- PR: [#6](https://github.com/sleimneer-cloud/AI-onboarding-website/pull/6) — draft
 
 ### 구현 기능
 
@@ -374,6 +379,42 @@ Migration과 model registry는 여러 에이전트가 병렬로 수정하지 않
 - Action checklist와 진행률
 - Evidence form과 링크 입력
 - loading, empty, validation, conflict 상태
+
+### 현재 구현
+
+- strict request/response schema와 employee service layer를 추가함
+- Dashboard 조회, Action 전이, Evidence 생성·조회 endpoint를 추가함
+- Action 멱등 처리, optimistic version 충돌, Evidence 이후 Action 잠금을 구현함
+- DB transaction 안에서 필수 Action 완료, assignment 소속, Evidence 중복을 검사함
+- React 로그인·직원 dashboard·Action checklist·Evidence form을 구현함
+- API 요청은 cookie credential을 포함하고 mutation은 메모리 CSRF token을 사용함
+- 외부 링크는 제목·설명·URL만 저장하며 URL 본문은 가져오지 않음
+- Windows PostgreSQL 검증을 위해 pytest와 demo seed/reset의 async loop를 호환 방식으로 실행함
+
+### 현재 검증
+
+| 검증 | 결과 |
+|---|---|
+| Phase 3 service·schema·API 계약 테스트 | 11 passed |
+| Backend 전체 테스트 | 84 passed — 로컬 PostgreSQL 16.14 포함 |
+| Phase 3 PostgreSQL 통합 테스트 | 6 passed |
+| Backend Ruff | 통과 |
+| GitHub Actions PostgreSQL 16 | 통과 — run 31252962154 |
+| Frontend Vitest | 4 passed |
+| Frontend typecheck | 통과 |
+| Frontend production build | 통과 |
+| Playwright test list | 1 test 확인 |
+| 브라우저 직원 전체 흐름 | login → Action 100% → Evidence·링크 제출 → 새로고침 후 잠금 확인 |
+
+### PR #6 CI 수정 이력
+
+- 최초 PostgreSQL 16 CI는 82 passed, 2 failed로 종료됨
+- 실패 원인은 초기 migration의 완성된 Check Constraint 이름에 SQLAlchemy naming convention이
+  다시 적용되어 `ck_<table>_ck_<table>_...` 형태가 된 것임
+- 29개 Check Constraint 이름을 `op.f()`로 고정해 새 DB에서도 model metadata와 같은 이름을
+  생성하도록 수정함
+- 완전히 새로 만든 로컬 PostgreSQL 16.14 테스트 DB에서 Backend 84 passed와 Ruff 통과를 확인함
+- 수정 후 [GitHub Actions PostgreSQL 16 재실행](https://github.com/sleimneer-cloud/AI-onboarding-website/actions/runs/31252962154)이 통과함
 
 ### 완료 조건
 
@@ -525,10 +566,9 @@ active assignment → completed
 
 다음 항목은 현재 단계 실패가 아니라 후속 단계에서 확인할 검증 공백이다.
 
-- Playwright Chromium 실제 browser run은 아직 수행하지 않았으며 Phase 6 전에 필수
 - Replit runtime과 실제 `PORT`, PostgreSQL URL 형식은 배포 단계에서 확인
-- 실제 직원 업무 resource의 IDOR는 Phase 3 API가 생길 때 현재 ownership helper 테스트에
-  더해 endpoint 수준으로 다시 검증해야 함
+- 전체 직원 browser 흐름은 수동 회귀 검증으로 통과했으며 자동 Playwright 회귀 시나리오는
+  Phase 6에서 추가
 
 ## 14. 문서 갱신 규칙
 

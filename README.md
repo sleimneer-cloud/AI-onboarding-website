@@ -19,12 +19,17 @@ Alembic migration, 허구 데모 seed/reset 및 단일 도메인 배포 구조�
 - normalized email·Argon2id 기반 로그인과 DB opaque session
 - Origin·CSRF 보호, 로그인 rate limit, 역할·소유권 검사 기반
 - `/api/v1/auth/login`, `/me`, `/csrf`, `/logout`
-- React/Vite/TypeScript 애플리케이션 shell
+- 직원 현재 주차·핵심가치·업무·Action을 집계하는 dashboard API
+- Action 완료/취소, 낙관적 잠금, Evidence 이후 Action 잠금
+- Evidence와 완료 Action·최대 3개 링크를 원자적으로 저장하는 API
+- `/api/v1/employee/dashboard`, `/assigned-actions/{id}`, `/evidence`
+- React/Vite/TypeScript 로그인·직원 dashboard·Action·Evidence 화면
 - pytest, Vitest, Playwright 기본 구성
 - Vite production build를 FastAPI가 같은 origin에서 제공하는 구조
 - 환경 변수와 Windows/Replit 실행 명령
 
-아직 직원 업무 API, Evidence Card, LLM 및 사용자 화면 기능은 구현하지 않았습니다.
+아직 Evidence Card 생성·수정·확정, LLM, 팀장 피드백, 가치별 리포트와 HR 조회 화면은
+구현하지 않았습니다.
 
 ## 요구 환경
 
