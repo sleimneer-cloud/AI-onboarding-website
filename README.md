@@ -23,13 +23,17 @@ Alembic migration, 허구 데모 seed/reset 및 단일 도메인 배포 구조�
 - Action 완료/취소, 낙관적 잠금, Evidence 이후 Action 잠금
 - Evidence와 완료 Action·최대 3개 링크를 원자적으로 저장하는 API
 - `/api/v1/employee/dashboard`, `/assigned-actions/{id}`, `/evidence`
-- React/Vite/TypeScript 로그인·직원 dashboard·Action·Evidence 화면
+- strict Pydantic `EvidenceCardGenerationInputV1`과 `CardContentV1`
+- Groq strict JSON Schema, 전체 8초 예산·1회 재시도·deterministic Mock fallback
+- Evidence Card 생성·조회·수정·확정 API와 서버 상태 전이
+- React Router 기반 직원 홈·업무·Evidence·Card·리포트 독립 경로
+- Card의 AI 최초본/사용자 최종본 분리와 읽기 전용 source reference 표시
 - pytest, Vitest, Playwright 기본 구성
 - Vite production build를 FastAPI가 같은 origin에서 제공하는 구조
 - 환경 변수와 Windows/Replit 실행 명령
 
-아직 Evidence Card 생성·수정·확정, LLM, 팀장 피드백, 가치별 리포트와 HR 조회 화면은
-구현하지 않았습니다.
+팀장 피드백, 검토 완료 가치별 리포트와 HR 조회 화면은 Phase 5 범위로 아직 구현하지
+않았습니다. `/employee/report`는 Card 확정 후 다음 단계를 안내하는 placeholder만 제공합니다.
 
 ## 요구 환경
 
@@ -62,6 +66,12 @@ origin으로 설정하며 path나 trailing slash를 포함하지 않습니다.
 `DEMO_ACCOUNT_PASSWORD`는 허구 데모 계정의 seed 입력이며 DB에는 Argon2id hash만
 저장합니다. `DEMO_REFERENCE_DATE`의 기본값은 재현 가능한 시연을 위해
 `2026-08-02`로 고정합니다.
+
+Evidence Card는 기본적으로 `AI_PROVIDER=groq`와 `GROQ_API_KEY`를 사용합니다.
+`GROQ_MODEL` 기본값은 `openai/gpt-oss-20b`이며 strict JSON Schema로 요청합니다. Groq
+호출은 전체 8초 안에서 최대 한 번 재시도하고, 최종 실패하거나 key가 없으면
+`AI_FALLBACK_TO_MOCK=true`일 때 화면에 명확히 표시되는 deterministic Mock으로
+전환합니다. 로컬에서 외부 호출 없이 재현하려면 `.env`의 `AI_PROVIDER=mock`을 사용합니다.
 
 ## Windows/PowerShell 설치
 

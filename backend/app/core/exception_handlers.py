@@ -71,6 +71,20 @@ def register_exception_handlers(app: FastAPI) -> None:
         exc: RequestValidationError,
     ) -> JSONResponse:
         errors = exc.errors()
+        card_content_error = request.method == "PATCH" and request.url.path.startswith(
+            "/api/v1/evidence-cards/"
+        ) and any(
+            error.get("type") == "card_schema_invalid"
+            or tuple(error.get("loc", ()))[:2] == ("body", "content")
+            for error in errors
+        )
+        if card_content_error:
+            return _error_response(
+                request,
+                status_code=422,
+                code="CARD_SCHEMA_INVALID",
+                message="Evidence Card 형식을 확인해 주세요.",
+            )
         invalid_json = any(error.get("type") == "json_invalid" for error in errors)
         if invalid_json:
             return _error_response(

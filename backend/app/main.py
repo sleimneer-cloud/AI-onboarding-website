@@ -7,6 +7,7 @@ from fastapi.responses import FileResponse
 
 from app.api.auth import router as auth_router
 from app.api.employee import router as employee_router
+from app.api.evidence_cards import router as evidence_cards_router
 from app.api.health import router as health_router
 from app.core.config import Settings, get_settings
 from app.core.exception_handlers import register_exception_handlers
@@ -97,6 +98,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(health_router)
     app.include_router(auth_router)
     app.include_router(employee_router)
+    app.include_router(evidence_cards_router)
     _register_frontend_routes(app, resolved_settings)
     return app
 

@@ -1,7 +1,7 @@
 # IX Value Loop 구현 로드맵
 
 - 문서 상태: 작업 진행 추적용
-- 최종 갱신일: 2026-08-08
+- 최종 갱신일: 2026-08-09
 - 대상: IX Value Loop MVP
 
 ## 1. 문서 역할
@@ -478,6 +478,38 @@ user_review → user_confirmed
 - 확정 이후 Card 수정과 재생성 차단
 - unknown field 거부
 
+### 현재 구현
+
+- React Router를 도입해 직원 홈, 업무·Value Action, Evidence, Card와 report 경로를 분리함
+- 직접 경로 진입과 서버 session 복원 후 역할별 경로 제한을 구현함
+- strict `EvidenceCardGenerationInputV1`, `CardContentV1`과 source reference 검증을 구현함
+- Evidence 선택 Action과 링크 제목·설명만 LLM 입력에 포함하고 외부 URL을 제외함
+- deterministic Mock과 Groq strict JSON Schema adapter를 구현함
+- Groq SDK 내부 재시도를 끄고 전체 8초 monotonic 예산 안에서 최대 1회 재시도함
+- timeout, 429, 네트워크·5xx, JSON/schema/source 오류 후 Mock fallback을 구현함
+- AI 호출 전 `ai_processing`을 commit하고 호출 완료 후 별도 transaction으로 결과를 저장함
+- Card 생성·조회·수정·확정 API와 optimistic version, 소유권, 상태 전이를 구현함
+- 최초 생성 JSON과 사용자 최종 JSON을 분리하고 확정 이후 변경을 차단함
+- Card 화면에서 실제 provider를 표시하고 text만 편집하며 source reference는 읽기 전용으로 표시함
+- `/employee/report`는 Phase 5 실제 리포트 전까지 팀장 검토 대기 안내만 제공함
+
+### 현재 검증
+
+| 검증 | 결과 |
+|---|---|
+| LLM schema·Mock·Groq adapter·fallback 집중 테스트 | 8 passed |
+| 실제 Groq network smoke (가상 데이터, `openai/gpt-oss-20b`) | schema `1.0` 검증 통과 |
+| Card API 계약 테스트 | 3 passed |
+| Phase 4 PostgreSQL 상태 전이·동시성 테스트 | 4 passed |
+| Backend 전체 pytest (PostgreSQL 16 포함) | 99 passed |
+| Backend Ruff | 통과 |
+| Python dependency check | 통과 |
+| Frontend Vitest | 7 passed |
+| Frontend typecheck | 통과 |
+| Frontend production build | 통과 |
+| Playwright test discovery | smoke test 1개 확인 |
+| pnpm frozen lockfile | 통과 |
+
 ### 완료 조건
 
 - 정상 Groq와 deterministic Mock 결과가 동일 schema 검증 통과
@@ -588,6 +620,8 @@ active assignment → completed
 - Replit runtime과 실제 `PORT`, PostgreSQL URL 형식은 배포 단계에서 확인
 - 전체 직원 browser 흐름은 수동 회귀 검증으로 통과했으며 자동 Playwright 회귀 시나리오는
   Phase 6에서 추가
+- 실제 `GROQ_API_KEY`를 사용한 로컬 Groq network smoke는 가상 데이터로 통과함.
+  Phase 6에서는 Replit secret과 배포 네트워크 환경에서 같은 smoke를 다시 확인
 
 ## 14. 문서 갱신 규칙
 

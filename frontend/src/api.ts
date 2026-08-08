@@ -1,5 +1,11 @@
 export type UserRole = "employee" | "manager" | "hr";
 export type ActionStatus = "pending" | "completed";
+export type EvidenceCardStatus =
+  | "ai_processing"
+  | "generation_failed"
+  | "user_review"
+  | "user_confirmed"
+  | "manager_reviewed";
 
 export interface User {
   id: string;
@@ -87,6 +93,58 @@ export interface EvidenceResponse extends EvidenceCreateInput {
   id: string;
   links: Array<EvidenceLinkInput & { id: string }>;
   submitted_at: string;
+}
+
+export interface CardText {
+  text: string;
+  source_refs: string[];
+}
+
+export interface GroundingWarning {
+  field:
+    | "key_actions"
+    | "value_connection"
+    | "evidence_summary"
+    | "discovery"
+    | "judgment_change"
+    | "work_impact"
+    | "next_action";
+  message: string;
+  source_refs: string[];
+}
+
+export interface CardContent {
+  schema_version: "1.0";
+  key_actions: CardText[];
+  value_connection: CardText;
+  evidence_summary: CardText;
+  discovery: CardText;
+  judgment_change: CardText;
+  work_impact: CardText;
+  next_action: CardText;
+  grounding_warnings: GroundingWarning[];
+}
+
+export interface EvidenceCard {
+  id: string;
+  evidence_id: string;
+  status: EvidenceCardStatus;
+  content: CardContent | null;
+  generation: {
+    provider: "groq" | "mock" | null;
+    model_name: string | null;
+    prompt_version: string;
+    schema_version: string;
+    latency_ms: number | null;
+  };
+  version: number;
+  confirmed_at: string | null;
+  manager_reviewed_at: string | null;
+  permissions: {
+    can_edit: boolean;
+    can_confirm: boolean;
+    can_retry: boolean;
+  };
 }
 
 interface ApiFieldError {
@@ -181,5 +239,29 @@ export const api = {
       method: "POST",
       headers: { "X-CSRF-Token": csrfToken },
       body: JSON.stringify(payload),
+    }),
+  createCard: (evidenceId: string, csrfToken: string) =>
+    request<EvidenceCard>(`/api/v1/evidence/${evidenceId}/card`, {
+      method: "POST",
+      headers: { "X-CSRF-Token": csrfToken },
+    }),
+  getCard: (cardId: string) =>
+    request<EvidenceCard>(`/api/v1/evidence-cards/${cardId}`),
+  updateCard: (
+    cardId: string,
+    version: number,
+    content: CardContent,
+    csrfToken: string,
+  ) =>
+    request<EvidenceCard>(`/api/v1/evidence-cards/${cardId}`, {
+      method: "PATCH",
+      headers: { "X-CSRF-Token": csrfToken },
+      body: JSON.stringify({ version, content }),
+    }),
+  confirmCard: (cardId: string, version: number, csrfToken: string) =>
+    request<EvidenceCard>(`/api/v1/evidence-cards/${cardId}/confirm`, {
+      method: "POST",
+      headers: { "X-CSRF-Token": csrfToken },
+      body: JSON.stringify({ version }),
     }),
 };
