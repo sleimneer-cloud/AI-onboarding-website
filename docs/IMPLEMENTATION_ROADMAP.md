@@ -399,6 +399,7 @@ Migration과 model registry는 여러 에이전트가 병렬로 수정하지 않
 | Backend 전체 테스트 | 84 passed — 로컬 PostgreSQL 16.14 포함 |
 | Phase 3 PostgreSQL 통합 테스트 | 6 passed |
 | Backend Ruff | 통과 |
+| GitHub Actions PostgreSQL 16 | 통과 — run 31252962154 |
 | Frontend Vitest | 4 passed |
 | Frontend typecheck | 통과 |
 | Frontend production build | 통과 |
@@ -413,7 +414,7 @@ Migration과 model registry는 여러 에이전트가 병렬로 수정하지 않
 - 29개 Check Constraint 이름을 `op.f()`로 고정해 새 DB에서도 model metadata와 같은 이름을
   생성하도록 수정함
 - 완전히 새로 만든 로컬 PostgreSQL 16.14 테스트 DB에서 Backend 84 passed와 Ruff 통과를 확인함
-- GitHub Actions 재실행 결과는 이 수정 커밋 push 후 갱신함
+- 수정 후 [GitHub Actions PostgreSQL 16 재실행](https://github.com/sleimneer-cloud/AI-onboarding-website/actions/runs/31252962154)이 통과함
 
 ### 완료 조건
 
