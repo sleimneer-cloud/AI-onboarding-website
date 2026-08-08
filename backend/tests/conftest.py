@@ -1,3 +1,6 @@
+import asyncio
+import sys
+
 import pytest
 import pytest_asyncio
 from fastapi import FastAPI
@@ -5,6 +8,11 @@ from httpx import ASGITransport, AsyncClient
 
 from app.core.config import Settings
 from app.main import create_app
+
+
+def pytest_asyncio_loop_factories():
+    loop_factory = asyncio.SelectorEventLoop if sys.platform == "win32" else asyncio.new_event_loop
+    return {"platform-compatible": loop_factory}
 
 
 @pytest.fixture

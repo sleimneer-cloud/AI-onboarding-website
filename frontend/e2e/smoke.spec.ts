@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("renders the scaffold and exposes process health", async ({ page, request }) => {
+test("renders the login shell and exposes process health", async ({ page, request }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1, name: "IX Value Loop" })).toBeVisible();
 

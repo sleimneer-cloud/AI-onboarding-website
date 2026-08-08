@@ -1,7 +1,6 @@
-import asyncio
-
 from app.core.config import Settings
 from app.db.session import create_database_engine, create_session_factory, transaction
+from app.scripts._async import run_async
 from app.services.demo_data import seed_demo_data
 
 
@@ -19,7 +18,7 @@ async def run() -> None:
 
 
 def main() -> None:
-    asyncio.run(run())
+    run_async(run())
     print("Fictional demo seed completed.")
 
 
