@@ -405,6 +405,16 @@ Migration과 model registry는 여러 에이전트가 병렬로 수정하지 않
 | Playwright test list | 1 test 확인 |
 | 브라우저 직원 전체 흐름 | login → Action 100% → Evidence·링크 제출 → 새로고침 후 잠금 확인 |
 
+### PR #6 CI 수정 이력
+
+- 최초 PostgreSQL 16 CI는 82 passed, 2 failed로 종료됨
+- 실패 원인은 초기 migration의 완성된 Check Constraint 이름에 SQLAlchemy naming convention이
+  다시 적용되어 `ck_<table>_ck_<table>_...` 형태가 된 것임
+- 29개 Check Constraint 이름을 `op.f()`로 고정해 새 DB에서도 model metadata와 같은 이름을
+  생성하도록 수정함
+- 완전히 새로 만든 로컬 PostgreSQL 16.14 테스트 DB에서 Backend 84 passed와 Ruff 통과를 확인함
+- GitHub Actions 재실행 결과는 이 수정 커밋 push 후 갱신함
+
 ### 완료 조건
 
 - 직원 login부터 Evidence 제출까지 실제 흐름 성공
